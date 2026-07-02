@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Neiro — 10-second collaborative audio SNS</title>
+<meta name="description" content="Capture a sound. Layer it on someone else's. Build music together — one clip at a time.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { background: #09090B; color: #FAFAFA; font-family: 'Inter', system-ui, -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
+  ::selection { background: rgba(245,158,11,0.25); color: #FAFAFA; }
+  ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: #27272A; border-radius: 3px; }
+  @keyframes pulse-dot { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.45; transform:scale(0.82); } }
+  @keyframes fade-up { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes playhead { from { left:0%; } to { left:100%; } }
+
+  .nav-link:hover { color:#FAFAFA; background:#111113; }
+  .btn-amber:hover { background:#FBBF24; }
+  .text-link:hover { color:#FAFAFA; }
+  .layer-box:hover { background:rgba(245,158,11,0.04); border-color:rgba(245,158,11,0.25); }
+  .feature-card:hover { border-color:rgba(245,158,11,0.25); background:#131108; }
+  .step-card:hover { border-color:rgba(245,158,11,0.2); background:#0F0F12; }
+  .step-card-highlight:hover { border-color:rgba(245,158,11,0.28); background:rgba(245,158,11,0.06); }
+  .footer-link:hover { color:#F59E0B; }
+
+  @media (max-width: 860px) {
+    .hero-grid { grid-template-columns: 1fr !important; }
+    .hero-mock { display: none; }
+    .hero-title { font-size:44px !important; }
+    .features-grid { grid-template-columns: 1fr !important; }
+    .steps-grid { grid-template-columns: 1fr !important; }
+    nav .nav-link { display: none; }
+  }
+</style>
+</head>
+<body>
+<div style="min-height:100vh; background:#09090B; color:#FAFAFA; font-family:'Inter',system-ui,sans-serif;">
+
+  <!-- ── NAV ── -->
+  <nav style="position:sticky; top:0; z-index:100; background:rgba(9,9,11,0.9); border-bottom:1px solid #18181B; backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);">
+    <div style="max-width:1100px; margin:0 auto; padding:0 40px; display:flex; align-items:center; height:56px; gap:12px;">
+      <a href="#" style="display:flex; align-items:center; gap:9px; text-decoration:none; flex-shrink:0;">
+        <div style="width:30px; height:30px; background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.22); border-radius:8px; display:flex; align-items:center; justify-content:center;">
+          <svg viewBox="0 0 16 16" fill="none" width="13" height="13">
+            <path d="M1 8 L3 4 L5 12 L7 6 L9 10 L11 5 L13 11 L15 8" stroke="#F59E0B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
+        </div>
+        <span style="font-size:16px; font-weight:700; letter-spacing:-0.03em; color:#FAFAFA; font-family:'JetBrains Mono',monospace;">Neiro</span>
+        <span style="font-size:11px; color:#52525B; font-family:'JetBrains Mono',monospace; letter-spacing:0.02em;">音色</span>
+      </a>
+      <div style="display:inline-flex; align-items:center; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.18); border-radius:100px; padding:3px 10px; flex-shrink:0;">
+        <span style="font-size:10px; color:#F59E0B; font-weight:600; letter-spacing:0.04em; text-transform:uppercase;">CHUNK-jp Wonder</span>
+      </div>
+      <div style="flex:1;"></div>
+      <a href="#features" class="nav-link" style="font-size:13px; color:#71717A; text-decoration:none; padding:6px 12px; border-radius:6px;">Features</a>
+      <a href="#how" class="nav-link" style="font-size:13px; color:#71717A; text-decoration:none; padding:6px 12px; border-radius:6px;">How it works</a>
+      <a href="https://chunk-jp.github.io/neiro/" target="_blank" class="btn-amber" style="display:inline-flex; align-items:center; gap:7px; background:#F59E0B; color:#0C0900; font-size:13px; font-weight:600; padding:8px 18px; border-radius:8px; text-decoration:none; margin-left:8px;">
+        Open Neiro
+        <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="10" height="10"><path d="M2 6h8M6 2l4 4-4 4"></path></svg>
+      </a>
+    </div>
+  </nav>
+
+  <!-- ── HERO ── -->
+  <section style="position:relative; overflow:hidden;">
+    <div style="position:absolute; inset:0; background:radial-gradient(ellipse 70% 50% at 50% -8%, rgba(245,158,11,0.09) 0%, transparent 65%); pointer-events:none;"></div>
+    <div style="position:absolute; inset:0; background-image:linear-gradient(rgba(255,255,255,0.012) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.012) 1px,transparent 1px); background-size:48px 48px; pointer-events:none; mask-image:radial-gradient(ellipse 80% 60% at 50% 0%,black 0%,transparent 75%); -webkit-mask-image:radial-gradient(ellipse 80% 60% at 50% 0%,black 0%,transparent 75%);"></div>
+
+    <div class="hero-grid" style="position:relative; max-width:1100px; margin:0 auto; padding:100px 40px 88px; display:grid; grid-template-columns:1fr 460px; gap:56px; align-items:center;">
+
+      <!-- Left: copy -->
+      <div style="animation:fade-up 0.6s ease both;">
+        <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(245,158,11,0.07); border:1px solid rgba(245,158,11,0.15); border-radius:100px; padding:5px 14px; margin-bottom:32px;">
+          <div style="width:5px; height:5px; background:#F59E0B; border-radius:50%; animation:pulse-dot 2.4s ease-in-out infinite;"></div>
+          <span style="font-size:12px; color:#F59E0B; font-weight:500; font-family:'JetBrains Mono',monospace; letter-spacing:-0.01em;">10-second collaborative audio SNS</span>
+        </div>
+
+        <h1 class="hero-title" style="font-size:68px; font-weight:700; line-height:1.0; letter-spacing:-0.04em; margin-bottom:24px; text-wrap:balance;">
+          10 seconds.<br>Infinite<br><span style="color:#F59E0B;">layers.</span>
+        </h1>
+
+        <p style="font-size:17px; color:#71717A; line-height:1.75; max-width:420px; margin-bottom:36px; text-wrap:pretty;">
+          Capture a sound. Layer it on someone else's. Build music together — one clip at a time.
+        </p>
+
+        <div style="max-width:420px; padding:14px 20px; background:rgba(245,158,11,0.04); border-left:2px solid rgba(245,158,11,0.28); border-radius:0 8px 8px 0; margin-bottom:36px;">
+          <p style="font-size:13px; color:#71717A; font-style:italic; line-height:1.85; margin:0;">Sound connects. Music becomes.<br><span style="font-size:11px; color:#3F3F46;">写真が繋がれば映画になる。音が繋がれば、物語になる。</span></p>
+        </div>
+
+        <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+          <a href="https://chunk-jp.github.io/neiro/" target="_blank" class="btn-amber" style="display:inline-flex; align-items:center; gap:8px; background:#F59E0B; color:#0C0900; font-size:15px; font-weight:600; padding:13px 28px; border-radius:10px; text-decoration:none;">
+            Open Neiro — it's free
+            <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><path d="M2 7h10M7 2l5 5-5 5"></path></svg>
+          </a>
+          <a href="#how" class="text-link" style="display:inline-flex; align-items:center; gap:6px; font-size:14px; color:#71717A; text-decoration:none;">
+            How it works
+            <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="11" height="11"><path d="M2 6h8M6 2l4 4-4 4"></path></svg>
+          </a>
+        </div>
+        <div style="display:flex; align-items:center; gap:6px; margin-top:18px;">
+          <svg viewBox="0 0 16 16" fill="none" stroke="#3F3F46" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" width="11" height="11"><path d="M8 2L2 5v4c0 3 2.5 5.5 6 6 3.5-.5 6-3 6-6V5L8 2Z"></path></svg>
+          <span style="font-size:11px; color:#3F3F46;">No install · PWA · Works on any device</span>
+        </div>
+      </div>
+
+      <!-- Right: DAW-style feed mockup -->
+      <div class="hero-mock" style="position:relative;">
+        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:380px; height:380px; background:radial-gradient(circle,rgba(245,158,11,0.07) 0%,transparent 68%); pointer-events:none;"></div>
+        <div style="position:relative; z-index:1; background:#0D0D10; border:1px solid #27272A; border-radius:16px; overflow:hidden; box-shadow:0 32px 80px rgba(0,0,0,0.55);">
+
+          <!-- Browser chrome -->
+          <div style="padding:11px 16px; border-bottom:1px solid #1C1C1F; background:#111113; display:flex; align-items:center; gap:10px;">
+            <div style="display:flex; gap:5px;">
+              <div style="width:10px; height:10px; border-radius:50%; background:#2A2A2D;"></div>
+              <div style="width:10px; height:10px; border-radius:50%; background:#2A2A2D;"></div>
+              <div style="width:10px; height:10px; border-radius:50%; background:#2A2A2D;"></div>
+            </div>
+            <div style="flex:1; background:#1C1C1F; border-radius:4px; padding:4px 10px; display:flex; align-items:center; gap:6px;">
+              <div style="width:4px; height:4px; border-radius:50%; background:#F59E0B; animation:pulse-dot 2s ease-in-out infinite;"></div>
+              <span style="font-size:10px; color:#52525B; font-family:'JetBrains Mono',monospace;">neiro.app / stack / #2847</span>
+            </div>
+          </div>
+
+          <!-- App header -->
+          <div style="padding:10px 16px; border-bottom:1px solid #1C1C1F; display:flex; align-items:center; justify-content:space-between;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <svg viewBox="0 0 16 16" fill="none" width="11" height="11">
+                <path d="M1 8 L3 4 L5 12 L7 6 L9 10 L11 5 L13 11 L15 8" stroke="#F59E0B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+              </svg>
+              <span style="font-size:12px; font-weight:700; color:#FAFAFA; letter-spacing:-0.02em; font-family:'JetBrains Mono',monospace;">stack #2847</span>
+              <span style="font-size:10px; color:#52525B;">3 layers · 10 sec</span>
+            </div>
+            <div style="display:inline-flex; align-items:center; gap:5px; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.15); border-radius:100px; padding:3px 9px;">
+              <div style="width:4px; height:4px; border-radius:50%; background:#F59E0B; animation:pulse-dot 1.6s ease-in-out infinite;"></div>
+              <span style="font-size:9px; color:#F59E0B; font-weight:600; font-family:'JetBrains Mono',monospace;">PLAYING</span>
+            </div>
+          </div>
+
+          <!-- DAW tracks -->
+          <div style="padding:12px 14px; display:flex; flex-direction:column; gap:6px;">
+
+            <!-- Timeline ruler -->
+            <div style="display:flex; padding-left:82px; margin-bottom:2px;">
+              <div style="flex:1; display:flex; justify-content:space-between; padding:0 2px;">
+                <span style="font-size:8px; color:#3F3F46; font-family:'JetBrains Mono',monospace;">0</span>
+                <span style="font-size:8px; color:#3F3F46; font-family:'JetBrains Mono',monospace;">2s</span>
+                <span style="font-size:8px; color:#3F3F46; font-family:'JetBrains Mono',monospace;">5s</span>
+                <span style="font-size:8px; color:#3F3F46; font-family:'JetBrains Mono',monospace;">8s</span>
+                <span style="font-size:8px; color:#3F3F46; font-family:'JetBrains Mono',monospace;">10s</span>
+              </div>
+            </div>
+
+            <!-- Track 1: amber (rainstorm) -->
+            <div style="display:flex; align-items:center; height:50px; gap:8px;">
+              <div style="width:74px; flex-shrink:0; display:flex; flex-direction:column; align-items:flex-end; gap:2px; padding-right:4px;">
+                <div style="display:flex; align-items:center; gap:4px;">
+                  <div style="width:16px; height:16px; border-radius:50%; background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.24); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                    <span style="font-size:6px; font-weight:700; color:#F59E0B;">RG</span>
+                  </div>
+                  <span style="font-size:9px; font-weight:600; color:#A1A1AA; white-space:nowrap;">@rainstorm_g</span>
+                </div>
+                <span style="font-size:8px; color:#3F3F46; font-style:italic;">Rooftop rain</span>
+              </div>
+              <div style="flex:1; height:46px; background:rgba(245,158,11,0.04); border:1px solid rgba(245,158,11,0.12); border-radius:6px; position:relative; overflow:hidden; display:flex; align-items:center; padding:0 4px;">
+                <div style="position:absolute; top:0; bottom:0; width:1.5px; background:rgba(245,158,11,0.65); animation:playhead 10s linear infinite; pointer-events:none;"></div>
+                <svg viewBox="0 0 240 48" style="width:100%; height:38px; display:block;" preserveAspectRatio="none">
+                  <line x1="0" y1="20" x2="0" y2="28" style="stroke:#F59E0B; stroke-width:3; stroke-linecap:round; opacity:0.85;"></line>
+                  <line x1="6" y1="18" x2="6" y2="30" style="stroke:#F59E0B; stroke-width:3; stroke-linecap:round; opacity:0.85;"></line>
+                  <line x1="12" y1="15" x2="12" y2="33" style="stroke:#F59E0B; stroke-width:3; stroke-linecap:round; opacity:0.85;"></line>
+                  <line x1="18" y1="12" x2="18" y2="36" style="stroke:#F59E0B; stroke-width:3; stroke-linecap:round; opacity:0.85;"></line>
+                  <line x1="24" y1="14" x2="24" y2="34" style="stroke:#F59E0B; stroke-width:3; stroke-linecap:round; opacity:0.85;"></line>
+                  <line x1="30" y1="16" x2="30" y2="32" style="stroke:#F59E0B; stroke-width:3; stroke-linecap:round; opacity:0.85;"></line>
+                  <line x1="36" y1="10" x2="36" y2="38" style="stroke:#F59E0B; stroke-width:3; stroke-linecap:round; opacity:0.85;"></line>
+                  <line x1="42" y1="6" x2="42" y2="42" style="stroke:#F59E0B; stroke-width:3; stroke-linecap:round; opacity:0.85;"></line>
+                  <line x1="48" y1="8" x2="48" y2="40" style="stroke:#F59E0B; stroke-width:3; stroke-linecap:round; opacity:0.85;"></line>
+                  <line x1="54" y1="12" x2="54" y2="36" style="stroke:#F59E0B; stroke-width:3; stroke-linecap:round; opacity:0.85;"></line>
+                  <line x1="60" y1="15" x2="60" y2="33" style="stroke:#F59E0B; stroke-width:3; stroke-linecap:round; opacity:0.85;"></line>
+                  <line x1="66" y1="18" x2="66" y2="30" style="stroke:#F59E0B; stroke-width:3; stroke-linecap:round; opacity:0.85;"></line>
+                  <line x1="72" y1="20" x2="72" y2="28" style="stroke:#F59E0B; stroke-width:3; stroke-linecap:round; opacity:0.85;"></line>
+                  <line x1="78" y1="17" x2="78" y2="31" style="stroke:#F59E0B; stroke-width:3; stroke-linecap:round; opacity:0.85;"></line>
+                  <line x1="84" y1="13" x2="84" y2="35" style="stroke:#F59E0B; stroke-width:3; stroke-linecap:round; opacity:0.85;"></line>
+                  <line x1="90" y1="9" x2="90" y2="39" style="stroke:#F59E0B; stroke-width:3; stroke-linecap:round; opacity:0.85;"></line>
+                  <line x1="96" y1="5" x2="96" y2="43" style="stroke:#F59E0B; stroke-width:3; stroke-linecap:round; opacity:0.85;"></line>
+                  <line x1="102" y1="3" x2="102" y2="45" style="stroke:#F59E0B; stroke-width:3; stroke-linecap:round; opacity:0.85;"></line>
+                  <line x1="108" y1="6" x2="108" y2="42" style="stroke:#F59E0B; stroke-width:3; stroke-linecap:round; opacity:0.85;"></line>
+                  <line x1="114" y1="10" x2="114" y2="38" style="stroke:#F59E0B; stroke-width:3; stroke-linecap:round; opacity:0.85;"></line>
+                  <line x1="120" y1="14" x2="120" y2="34" style="stroke:#F59E0B; stroke-width:3; stroke-linecap:round; opacity:0.85;"></line>
+                  <line x1="126" y1="17" x2="126" y2="31" style="stroke:#F59E0B; stroke-width:3; stroke-linecap:round; opacity:0.85;"></line>
+                  <line x1="132" y1="15" x2="132" y2="33" style="stroke:#F59E0B; stroke-width:3; stroke-linecap:round; opacity:0.85;"></line>
+                  <line x1="138" y1="11" x2="138" y2="37" style="stroke:#F59E0B; stroke-width:3; stroke-linecap:round; opacity:0.85;"></line>
+                  <line x1="144" y1="7" x2="144" y2="41" style="stroke:#F59E0B; stroke-width:3; stroke-linecap:round; opacity:0.85;"></line>
+                  <line x1="150" y1="4" x2="150" y2="44" style="stroke:#F59E0B; stroke-width:3; stroke-linecap:round; opacity:0.85;"></line>
+                  <line x1="156" y1="2" x2="156" y2="46" style="stroke:#F59E0B; stroke-width:3; stroke-linecap:round; opacity:0.85;"></line>
+                  <line x1="162" y1="4" x2="162" y2="44" style="stroke:#F59E0B; stroke-width:3; stroke-linecap:round; opacity:0.85;"></line>
+                  <line x1="168" y1="7" x2="168" y2="41" style="stroke:#F59E0B; stroke-width:3; stroke-linecap:round; opacity:0.85;"></line>
+                  <line x1="174" y1="11" x2="174" y2="37" style="stroke:#F59E0B; stroke-width:3; stroke-linecap:round; opacity:0.85;"></line>
+                  <line x1="180" y1="14" x2="180" y2="34" style="stroke:#F59E0B; stroke-width:3; stroke-linecap:round; opacity:0.85;"></line>
+                  <line x1="186" y1="17" x2="186" y2="31" style="stroke:#F59E0B; stroke-width:3; stroke-linecap:round; opacity:0.85;"></line>
+                  <line x1="192" y1="19" x2="192" y2="29" style="stroke:#F59E0B; stroke-width:3; stroke-linecap:round; opacity:0.85;"></line>
+                  <line x1="198" y1="16" x2="198" y2="32" style="stroke:#F59E0B; stroke-width:3; stroke-linecap:round; opacity:0.85;"></line>
+                  <line x1="204" y1="12" x2="204" y2="36" style="stroke:#F59E0B; stroke-width:3; stroke-linecap:round; opacity:0.85;"></line>
+                  <line x1="210" y1="8" x2="210" y2="40" style="stroke:#F59E0B; stroke-width:3; stroke-linecap:round; opacity:0.85;"></line>
+                  <line x1="216" y1="10" x2="216" y2="38" style="stroke:#F59E0B; stroke-width:3; stroke-linecap:round; opacity:0.85;"></line>
+                  <line x1="222" y1="13" x2="222" y2="35" style="stroke:#F59E0B; stroke-width:3; stroke-linecap:round; opacity:0.85;"></line>
+                  <line x1="228" y1="16" x2="228" y2="32" style="stroke:#F59E0B; stroke-width:3; stroke-linecap:round; opacity:0.85;"></line>
+                  <line x1="234" y1="19" x2="234" y2="29" style="stroke:#F59E0B; stroke-width:3; stroke-linecap:round; opacity:0.85;"></line>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Track 2: emerald (café) -->
+            <div style="display:flex; align-items:center; height:50px; gap:8px;">
+              <div style="width:74px; flex-shrink:0; display:flex; flex-direction:column; align-items:flex-end; gap:2px; padding-right:4px;">
+                <div style="display:flex; align-items:center; gap:4px;">
+                  <div style="width:16px; height:16px; border-radius:50%; background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.24); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                    <span style="font-size:6px; font-weight:700; color:#10B981;">KF</span>
+                  </div>
+                  <span style="font-size:9px; font-weight:600; color:#A1A1AA; white-space:nowrap;">@kafu</span>
+                </div>
+                <span style="font-size:8px; color:#3F3F46; font-style:italic;">Morning grind</span>
+              </div>
+              <div style="flex:1; height:46px; background:rgba(16,185,129,0.04); border:1px solid rgba(16,185,129,0.12); border-radius:6px; position:relative; overflow:hidden; display:flex; align-items:center; padding:0 4px;">
+                <div style="position:absolute; top:0; bottom:0; width:1.5px; background:rgba(16,185,129,0.55); animation:playhead 10s linear infinite; pointer-events:none;"></div>
+                <svg viewBox="0 0 240 48" style="width:100%; height:38px; display:block;" preserveAspectRatio="none">
+                  <line x1="0" y1="13" x2="0" y2="35" style="stroke:#10B981; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="6" y1="12" x2="6" y2="36" style="stroke:#10B981; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="12" y1="14" x2="12" y2="34" style="stroke:#10B981; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="18" y1="11" x2="18" y2="37" style="stroke:#10B981; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="24" y1="12" x2="24" y2="36" style="stroke:#10B981; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="30" y1="13" x2="30" y2="35" style="stroke:#10B981; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="36" y1="14" x2="36" y2="34" style="stroke:#10B981; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="42" y1="11" x2="42" y2="37" style="stroke:#10B981; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="48" y1="12" x2="48" y2="36" style="stroke:#10B981; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="54" y1="13" x2="54" y2="35" style="stroke:#10B981; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="60" y1="14" x2="60" y2="34" style="stroke:#10B981; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="66" y1="12" x2="66" y2="36" style="stroke:#10B981; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="72" y1="11" x2="72" y2="37" style="stroke:#10B981; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="78" y1="13" x2="78" y2="35" style="stroke:#10B981; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="84" y1="14" x2="84" y2="34" style="stroke:#10B981; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="90" y1="12" x2="90" y2="36" style="stroke:#10B981; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="96" y1="11" x2="96" y2="37" style="stroke:#10B981; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="102" y1="13" x2="102" y2="35" style="stroke:#10B981; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="108" y1="12" x2="108" y2="36" style="stroke:#10B981; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="114" y1="14" x2="114" y2="34" style="stroke:#10B981; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="120" y1="13" x2="120" y2="35" style="stroke:#10B981; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="126" y1="12" x2="126" y2="36" style="stroke:#10B981; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="132" y1="14" x2="132" y2="34" style="stroke:#10B981; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="138" y1="11" x2="138" y2="37" style="stroke:#10B981; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="144" y1="12" x2="144" y2="36" style="stroke:#10B981; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="150" y1="13" x2="150" y2="35" style="stroke:#10B981; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="156" y1="14" x2="156" y2="34" style="stroke:#10B981; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="162" y1="12" x2="162" y2="36" style="stroke:#10B981; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="168" y1="13" x2="168" y2="35" style="stroke:#10B981; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="174" y1="11" x2="174" y2="37" style="stroke:#10B981; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="180" y1="14" x2="180" y2="34" style="stroke:#10B981; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="186" y1="12" x2="186" y2="36" style="stroke:#10B981; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="192" y1="13" x2="192" y2="35" style="stroke:#10B981; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="198" y1="14" x2="198" y2="34" style="stroke:#10B981; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="204" y1="11" x2="204" y2="37" style="stroke:#10B981; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="210" y1="12" x2="210" y2="36" style="stroke:#10B981; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="216" y1="13" x2="216" y2="35" style="stroke:#10B981; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="222" y1="14" x2="222" y2="34" style="stroke:#10B981; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="228" y1="12" x2="228" y2="36" style="stroke:#10B981; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="234" y1="13" x2="234" y2="35" style="stroke:#10B981; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Track 3: violet (guitar) -->
+            <div style="display:flex; align-items:center; height:50px; gap:8px;">
+              <div style="width:74px; flex-shrink:0; display:flex; flex-direction:column; align-items:flex-end; gap:2px; padding-right:4px;">
+                <div style="display:flex; align-items:center; gap:4px;">
+                  <div style="width:16px; height:16px; border-radius:50%; background:rgba(139,92,246,0.12); border:1px solid rgba(139,92,246,0.24); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                    <span style="font-size:6px; font-weight:700; color:#8B5CF6;">HK</span>
+                  </div>
+                  <span style="font-size:9px; font-weight:600; color:#A1A1AA; white-space:nowrap;">@hirata_k</span>
+                </div>
+                <span style="font-size:8px; color:#3F3F46; font-style:italic;">G minor, 3am</span>
+              </div>
+              <div style="flex:1; height:46px; background:rgba(139,92,246,0.04); border:1px solid rgba(139,92,246,0.12); border-radius:6px; position:relative; overflow:hidden; display:flex; align-items:center; padding:0 4px;">
+                <div style="position:absolute; top:0; bottom:0; width:1.5px; background:rgba(139,92,246,0.55); animation:playhead 10s linear infinite; pointer-events:none;"></div>
+                <svg viewBox="0 0 240 48" style="width:100%; height:38px; display:block;" preserveAspectRatio="none">
+                  <line x1="0" y1="22" x2="0" y2="26" style="stroke:#8B5CF6; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="6" y1="20" x2="6" y2="28" style="stroke:#8B5CF6; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="12" y1="21" x2="12" y2="27" style="stroke:#8B5CF6; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="18" y1="18" x2="18" y2="30" style="stroke:#8B5CF6; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="24" y1="4" x2="24" y2="44" style="stroke:#8B5CF6; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="30" y1="2" x2="30" y2="46" style="stroke:#8B5CF6; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="36" y1="3" x2="36" y2="45" style="stroke:#8B5CF6; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="42" y1="16" x2="42" y2="32" style="stroke:#8B5CF6; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="48" y1="20" x2="48" y2="28" style="stroke:#8B5CF6; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="54" y1="22" x2="54" y2="26" style="stroke:#8B5CF6; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="60" y1="21" x2="60" y2="27" style="stroke:#8B5CF6; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="66" y1="19" x2="66" y2="29" style="stroke:#8B5CF6; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="72" y1="20" x2="72" y2="28" style="stroke:#8B5CF6; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="78" y1="22" x2="78" y2="26" style="stroke:#8B5CF6; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="84" y1="5" x2="84" y2="43" style="stroke:#8B5CF6; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="90" y1="2" x2="90" y2="46" style="stroke:#8B5CF6; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="96" y1="3" x2="96" y2="45" style="stroke:#8B5CF6; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="102" y1="19" x2="102" y2="29" style="stroke:#8B5CF6; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="108" y1="21" x2="108" y2="27" style="stroke:#8B5CF6; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="114" y1="22" x2="114" y2="26" style="stroke:#8B5CF6; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="120" y1="20" x2="120" y2="28" style="stroke:#8B5CF6; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="126" y1="18" x2="126" y2="30" style="stroke:#8B5CF6; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="132" y1="21" x2="132" y2="27" style="stroke:#8B5CF6; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="138" y1="22" x2="138" y2="26" style="stroke:#8B5CF6; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="144" y1="6" x2="144" y2="42" style="stroke:#8B5CF6; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="150" y1="2" x2="150" y2="46" style="stroke:#8B5CF6; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="156" y1="4" x2="156" y2="44" style="stroke:#8B5CF6; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="162" y1="17" x2="162" y2="31" style="stroke:#8B5CF6; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="168" y1="20" x2="168" y2="28" style="stroke:#8B5CF6; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="174" y1="22" x2="174" y2="26" style="stroke:#8B5CF6; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="180" y1="21" x2="180" y2="27" style="stroke:#8B5CF6; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="186" y1="20" x2="186" y2="28" style="stroke:#8B5CF6; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="192" y1="22" x2="192" y2="26" style="stroke:#8B5CF6; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="198" y1="21" x2="198" y2="27" style="stroke:#8B5CF6; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="204" y1="3" x2="204" y2="45" style="stroke:#8B5CF6; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="210" y1="2" x2="210" y2="46" style="stroke:#8B5CF6; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="216" y1="5" x2="216" y2="43" style="stroke:#8B5CF6; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="222" y1="19" x2="222" y2="29" style="stroke:#8B5CF6; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="228" y1="21" x2="228" y2="27" style="stroke:#8B5CF6; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                  <line x1="234" y1="22" x2="234" y2="26" style="stroke:#8B5CF6; stroke-width:3; stroke-linecap:round; opacity:0.8;"></line>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Track 4: ghost / add your layer -->
+            <div style="display:flex; align-items:center; height:50px; gap:8px;">
+              <div style="width:74px; flex-shrink:0; display:flex; flex-direction:column; align-items:flex-end; gap:2px; padding-right:4px;">
+                <span style="font-size:9px; color:#3F3F46;">your layer</span>
+              </div>
+              <div class="layer-box" style="flex:1; height:46px; background:#111113; border:1.5px dashed #27272A; border-radius:6px; display:flex; align-items:center; justify-content:center; gap:7px; cursor:pointer;">
+                <div style="width:18px; height:18px; border-radius:50%; background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.2); display:flex; align-items:center; justify-content:center;">
+                  <svg viewBox="0 0 10 10" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" width="7" height="7"><path d="M5 1v8M1 5h8"></path></svg>
+                </div>
+                <span style="font-size:10px; color:#52525B; font-weight:500;">Layer your 10 seconds</span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Player controls bar -->
+          <div style="padding:10px 16px; border-top:1px solid #1C1C1F; background:#111113; display:flex; align-items:center; justify-content:space-between;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <div style="width:26px; height:26px; border-radius:50%; background:#F59E0B; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                <svg viewBox="0 0 10 12" fill="#0C0900" width="8" height="9"><polygon points="1,1 9,6 1,11"></polygon></svg>
+              </div>
+              <span style="font-size:10px; color:#52525B; font-family:'JetBrains Mono',monospace;">0:05 / 0:10</span>
+              <div style="width:80px; height:2px; background:#27272A; border-radius:1px; position:relative; overflow:hidden;">
+                <div style="position:absolute; left:0; top:0; bottom:0; width:50%; background:#F59E0B; border-radius:1px;"></div>
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <svg viewBox="0 0 16 14" fill="none" stroke="#F59E0B" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" width="14" height="12">
+                <path d="M1 4h9a3 3 0 010 6H9"></path>
+                <path d="M15 4l-2-2M15 4l-2 2"></path>
+                <path d="M15 10H6a3 3 0 010-6H7"></path>
+                <path d="M1 10l2-2M1 10l2 2"></path>
+              </svg>
+              <span style="font-size:9px; color:#F59E0B; font-weight:600; font-family:'JetBrains Mono',monospace;">LOOP</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── FEATURES ── -->
+  <section id="features" style="padding:80px 40px;">
+    <div style="max-width:1100px; margin:0 auto;">
+
+      <div style="text-align:center; margin-bottom:48px;">
+        <span style="font-size:11px; font-weight:600; color:#52525B; text-transform:uppercase; letter-spacing:0.1em;">What makes Neiro different</span>
+      </div>
+
+      <div class="features-grid" style="display:grid; grid-template-columns:repeat(2,1fr); gap:14px;">
+
+        <!-- 10-second capture -->
+        <div class="feature-card" style="background:#111113; border:1px solid #1E1E23; border-radius:16px; padding:32px 36px; position:relative; overflow:hidden;">
+          <div style="position:absolute; top:0; right:0; width:160px; height:160px; background:radial-gradient(ellipse at top right,rgba(245,158,11,0.05),transparent 65%); pointer-events:none;"></div>
+          <div style="width:44px; height:44px; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.16); border-radius:11px; display:flex; align-items:center; justify-content:center; margin-bottom:18px;">
+            <svg viewBox="0 0 20 20" fill="none" stroke="#F59E0B" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+              <circle cx="10" cy="11.5" r="6.5"></circle>
+              <path d="M10 8v3.5l2 2"></path>
+              <path d="M7.5 2.5h5"></path>
+              <path d="M10 2.5v2"></path>
+            </svg>
+          </div>
+          <h3 style="font-size:18px; font-weight:700; letter-spacing:-0.02em; margin-bottom:8px;">10-second capture</h3>
+          <p style="font-size:14px; color:#71717A; line-height:1.7;">Hit record. 10 seconds. Done. No editing, no setup — just the sound you heard right now.</p>
+        </div>
+
+        <!-- Layer on anyone -->
+        <div class="feature-card" style="background:#111113; border:1px solid #1E1E23; border-radius:16px; padding:32px 36px; position:relative; overflow:hidden;">
+          <div style="position:absolute; top:0; right:0; width:160px; height:160px; background:radial-gradient(ellipse at top right,rgba(245,158,11,0.05),transparent 65%); pointer-events:none;"></div>
+          <div style="width:44px; height:44px; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.16); border-radius:11px; display:flex; align-items:center; justify-content:center; margin-bottom:18px;">
+            <svg viewBox="0 0 20 20" fill="none" stroke="#F59E0B" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+              <path d="M2 14l8 4 8-4M2 10l8 4 8-4M2 6l8 4 8-4"></path>
+            </svg>
+          </div>
+          <h3 style="font-size:18px; font-weight:700; letter-spacing:-0.02em; margin-bottom:8px;">Layer on anyone</h3>
+          <p style="font-size:14px; color:#71717A; line-height:1.7;">Found a clip that moves you? Add your 10 seconds on top. Music builds one voice at a time.</p>
+        </div>
+
+        <!-- Loop & listen -->
+        <div class="feature-card" style="background:#111113; border:1px solid #1E1E23; border-radius:16px; padding:32px 36px; position:relative; overflow:hidden;">
+          <div style="position:absolute; top:0; right:0; width:160px; height:160px; background:radial-gradient(ellipse at top right,rgba(245,158,11,0.05),transparent 65%); pointer-events:none;"></div>
+          <div style="width:44px; height:44px; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.16); border-radius:11px; display:flex; align-items:center; justify-content:center; margin-bottom:18px;">
+            <svg viewBox="0 0 20 20" fill="none" stroke="#F59E0B" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+              <path d="M4 6a7 7 0 0113 3"></path>
+              <path d="M16 14a7 7 0 01-13-3"></path>
+              <path d="M4 3v4h4"></path>
+              <path d="M16 17v-4h-4"></path>
+            </svg>
+          </div>
+          <h3 style="font-size:18px; font-weight:700; letter-spacing:-0.02em; margin-bottom:8px;">Loop &amp; listen</h3>
+          <p style="font-size:14px; color:#71717A; line-height:1.7;">Every stack loops seamlessly. Hear how your sound fits — or clashes — with what came before.</p>
+        </div>
+
+        <!-- No install -->
+        <div class="feature-card" style="background:#111113; border:1px solid #1E1E23; border-radius:16px; padding:32px 36px; position:relative; overflow:hidden;">
+          <div style="position:absolute; top:0; right:0; width:160px; height:160px; background:radial-gradient(ellipse at top right,rgba(245,158,11,0.05),transparent 65%); pointer-events:none;"></div>
+          <div style="width:44px; height:44px; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.16); border-radius:11px; display:flex; align-items:center; justify-content:center; margin-bottom:18px;">
+            <svg viewBox="0 0 20 20" fill="none" stroke="#F59E0B" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+              <circle cx="10" cy="10" r="8"></circle>
+              <path d="M10 2a14.3 14.3 0 000 16M2 10h16"></path>
+              <path d="M10 2a9.5 9.5 0 010 16"></path>
+            </svg>
+          </div>
+          <h3 style="font-size:18px; font-weight:700; letter-spacing:-0.02em; margin-bottom:8px;">No install needed</h3>
+          <p style="font-size:14px; color:#71717A; line-height:1.7;">Neiro is a PWA. Open it in your browser, record, post. Works on any device.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── DEVELOPER STORY ── -->
+  <section style="padding:0 40px 80px;">
+    <div style="max-width:1100px; margin:0 auto;">
+      <div style="background:#0E0E10; border:1px solid #18181B; border-radius:18px; overflow:hidden; position:relative;">
+        <div style="position:absolute; inset:0; background:radial-gradient(ellipse 55% 65% at 50% 0%,rgba(245,158,11,0.045) 0%,transparent 70%); pointer-events:none;"></div>
+        <div style="position:absolute; top:0; left:50%; transform:translateX(-50%); width:1px; height:48px; background:linear-gradient(to bottom,rgba(245,158,11,0.5),transparent);"></div>
+        <div style="position:relative; padding:64px 72px; text-align:center;">
+          <div style="display:inline-block; font-size:11px; font-weight:600; color:#52525B; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:20px;">Why I built this</div>
+          <blockquote style="font-size:20px; color:#A1A1AA; line-height:1.85; max-width:680px; margin:0 auto 28px; font-style:italic; text-wrap:pretty;">
+            "I kept hearing interesting sounds — a café, a rainstorm, a guitar riff — and wanting to share them with someone who would <span style="color:#FAFAFA; font-style:normal; font-weight:500;">add to them</span>, not just listen. Every music app I tried wanted me to make a finished song. Neiro is the opposite: start something unfinished, and see where it goes."
+          </blockquote>
+          <div style="display:inline-flex; align-items:center; gap:10px;">
+            <div style="width:32px; height:32px; border-radius:50%; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.18); display:flex; align-items:center; justify-content:center;">
+              <svg viewBox="0 0 16 16" fill="none" width="11" height="11">
+                <path d="M1 8 L3 4 L5 12 L7 6 L9 10 L11 5 L13 11 L15 8" stroke="#F59E0B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+              </svg>
+            </div>
+            <span style="font-size:13px; color:#71717A;">CHUNK-jp developer · independent builder</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── HOW IT WORKS ── -->
+  <section id="how" style="padding:0 40px 88px;">
+    <div style="max-width:1100px; margin:0 auto;">
+
+      <div style="display:flex; align-items:baseline; gap:16px; margin-bottom:44px; padding-bottom:20px; border-bottom:1px solid #18181B;">
+        <h2 style="font-size:22px; font-weight:700; letter-spacing:-0.02em;">How it works</h2>
+        <span style="font-size:12px; color:#52525B; font-family:'JetBrains Mono',monospace;">three steps · no account needed</span>
+      </div>
+
+      <div class="steps-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:14px;">
+
+        <div class="step-card" style="background:#0D0D10; border:1px solid #1C1C1F; border-radius:14px; padding:28px 28px 24px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;">
+            <div style="width:36px; height:36px; border-radius:50%; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.18); display:flex; align-items:center; justify-content:center;">
+              <span style="font-size:14px; font-weight:700; color:#F59E0B; font-family:'JetBrains Mono',monospace;">1</span>
+            </div>
+            <svg viewBox="0 0 20 20" fill="none" stroke="#27272A" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M4 10h12M10 4l6 6-6 6"></path></svg>
+          </div>
+          <h4 style="font-size:16px; font-weight:700; letter-spacing:-0.02em; margin-bottom:8px;">Open in browser</h4>
+          <p style="font-size:13px; color:#71717A; line-height:1.7;">Neiro is a PWA — no install, no app store. Just open it and you're in.</p>
+        </div>
+
+        <div class="step-card" style="background:#0D0D10; border:1px solid #1C1C1F; border-radius:14px; padding:28px 28px 24px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;">
+            <div style="width:36px; height:36px; border-radius:50%; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.18); display:flex; align-items:center; justify-content:center;">
+              <span style="font-size:14px; font-weight:700; color:#F59E0B; font-family:'JetBrains Mono',monospace;">2</span>
+            </div>
+            <svg viewBox="0 0 20 20" fill="none" stroke="#27272A" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M4 10h12M10 4l6 6-6 6"></path></svg>
+          </div>
+          <h4 style="font-size:16px; font-weight:700; letter-spacing:-0.02em; margin-bottom:8px;">Record 10 seconds</h4>
+          <p style="font-size:13px; color:#71717A; line-height:1.7;">Anything. A sound, a melody, the rain. No editing needed — raw is the point.</p>
+        </div>
+
+        <div class="step-card-highlight" style="background:rgba(245,158,11,0.04); border:1px solid rgba(245,158,11,0.14); border-radius:14px; padding:28px 28px 24px;">
+          <div style="margin-bottom:18px;">
+            <div style="width:36px; height:36px; border-radius:50%; background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.28); display:flex; align-items:center; justify-content:center;">
+              <span style="font-size:14px; font-weight:700; color:#F59E0B; font-family:'JetBrains Mono',monospace;">3</span>
+            </div>
+          </div>
+          <h4 style="font-size:16px; font-weight:700; letter-spacing:-0.02em; margin-bottom:8px;">Post or layer</h4>
+          <p style="font-size:13px; color:#71717A; line-height:1.7;">Post your clip to start a new stack, or add it to someone else's. Watch music grow.</p>
+        </div>
+
+      </div>
+
+      <div style="margin-top:36px; text-align:center;">
+        <a href="https://chunk-jp.github.io/neiro/" target="_blank" class="btn-amber" style="display:inline-flex; align-items:center; gap:8px; background:#F59E0B; color:#0C0900; font-size:15px; font-weight:600; padding:14px 32px; border-radius:10px; text-decoration:none;">
+          Start layering — Open Neiro
+          <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><path d="M2 7h10M7 2l5 5-5 5"></path></svg>
+        </a>
+        <div style="margin-top:12px; font-size:12px; color:#3F3F46;">No install · No account · Open on any device</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── FOOTER ── -->
+  <footer style="border-top:1px solid #18181B; padding:44px 40px;">
+    <div style="max-width:1100px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:20px;">
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <a href="https://chunk-jp.github.io/" class="footer-link" style="display:inline-flex; align-items:center; gap:7px; font-size:14px; color:#71717A; text-decoration:none;">
+          <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="10" height="10"><path d="M10 6H2M6 10l-4-4 4-4"></path></svg>
+          Back to CHUNK-jp
+        </a>
+        <span style="font-size:12px; color:#3F3F46; font-family:'JetBrains Mono',monospace;">Part of CHUNK-jp Wonder — tools for curiosity and play</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:16px;">
+        <div style="display:inline-flex; align-items:center; gap:6px; background:rgba(245,158,11,0.06); border:1px solid rgba(245,158,11,0.12); border-radius:100px; padding:4px 12px;">
+          <div style="width:5px; height:5px; border-radius:50%; background:#F59E0B; animation:pulse-dot 2s ease-in-out infinite;"></div>
+          <span style="font-size:11px; color:#F59E0B; font-weight:500;">CHUNK-jp Wonder</span>
+        </div>
+        <span style="font-size:12px; color:#27272A;">© 2026 CHUNK-jp</span>
+      </div>
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>
