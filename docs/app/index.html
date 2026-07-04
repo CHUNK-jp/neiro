@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Neiro — 10 seconds. Infinite layers.</title>
+<meta name="description" content="Capture a 10-second sound, layer it on someone else's, and let the mix glue itself into music.">
+<meta name="theme-color" content="#09090B">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="../">
+      <span class="brand-mark">
+        <svg viewBox="0 0 16 16" fill="none" width="13" height="13" aria-hidden="true">
+          <path d="M1 8 L3 4 L5 12 L7 6 L9 10 L11 5 L13 11 L15 8" stroke="#F59E0B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+        </svg>
+      </span>
+      <span class="brand-name">Neiro</span>
+      <span class="brand-sub">音色</span>
+    </a>
+    <div class="nav-spacer"></div>
+    <div class="nav-links-wrap">
+      <a id="nav-feed-link" class="nav-link" href="#feed">Feed</a>
+      <a id="nav-about-link" class="nav-link" href="../">About</a>
+    </div>
+    <button id="lang-btn" class="btn btn-lang" type="button">日本語</button>
+    <button id="install-btn" class="btn btn-amber btn-install" type="button" hidden>Add to Home Screen</button>
+  </div>
+</nav>
+
+<main class="main">
+
+  <!-- ── Recorder ── -->
+  <section id="recorder-card" class="recorder-card">
+    <div id="layer-banner" class="layer-banner" hidden>
+      <svg viewBox="0 0 20 20" fill="none" stroke="#F59E0B" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" aria-hidden="true"><path d="M2 14l8 4 8-4M2 10l8 4 8-4M2 6l8 4 8-4"></path></svg>
+      <span id="layer-banner-title"></span>
+      <span id="layer-banner-hint" class="layer-banner-hint">The original plays while you record (headphones recommended)</span>
+      <button id="layer-cancel" class="layer-cancel" type="button" aria-label="Cancel layering">×</button>
+    </div>
+
+    <!-- idle -->
+    <div id="panel-idle" class="rec-panel">
+      <button id="record-btn" class="record-btn" type="button" aria-label="Start recording">
+        <span class="record-btn-glow" aria-hidden="true"></span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="32" height="32" aria-hidden="true">
+          <rect x="9" y="2" width="6" height="12" rx="3"></rect>
+          <path d="M5 10a7 7 0 0014 0"></path>
+          <path d="M12 17v4"></path>
+        </svg>
+      </button>
+      <p id="rec-hint" class="rec-hint">Tap to record 10 seconds</p>
+      <p id="rec-subhint" class="rec-subhint">Someone will add to your sound — not just listen.</p>
+    </div>
+
+    <!-- recording -->
+    <div id="panel-recording" class="rec-panel" hidden>
+      <canvas id="wave-canvas" class="wave-canvas" aria-hidden="true"></canvas>
+      <div class="countdown-row">
+        <span class="rec-dot" aria-hidden="true"></span>
+        <span id="countdown" class="countdown">10.0</span>
+        <span id="countdown-unit" class="countdown-unit">sec</span>
+      </div>
+      <div class="progress-track"><div id="progress-fill" class="progress-fill"></div></div>
+      <button id="stop-btn" class="btn btn-ghost btn-stop" type="button">Tap to stop</button>
+    </div>
+
+    <!-- preview -->
+    <div id="panel-preview" class="rec-panel" hidden>
+      <p id="preview-label" class="preview-label">Got it. Listen back, then post.</p>
+      <button id="preview-play-btn" class="btn btn-loop preview-play" type="button">
+        <svg viewBox="0 0 10 12" fill="currentColor" width="11" height="13" aria-hidden="true"><polygon points="1,1 9,6 1,11"></polygon></svg>
+        <span>Preview</span>
+      </button>
+      <div class="pitch-row">
+        <span id="pitch-label" class="pitch-label">Pitch</span>
+        <button id="pitch-down" class="btn btn-ghost btn-pitch" type="button" aria-label="Pitch down">−</button>
+        <span id="pitch-value" class="pitch-value">0</span>
+        <button id="pitch-up" class="btn btn-ghost btn-pitch" type="button" aria-label="Pitch up">+</button>
+        <span class="pitch-unit">st</span>
+      </div>
+      <input id="title-input" class="title-input" type="text" maxlength="40" placeholder="Title (optional)">
+      <div class="preview-actions">
+        <button id="post-btn" class="btn btn-amber" type="button">Post</button>
+        <button id="discard-btn" class="btn btn-ghost" type="button">Discard</button>
+      </div>
+    </div>
+
+    <!-- mic denied -->
+    <div id="panel-mic-denied" class="rec-panel mic-denied" hidden>
+      <p id="mic-denied-title" class="mic-denied-title">Microphone unavailable</p>
+      <p id="mic-denied-body" class="mic-denied-body">Neiro needs microphone access to record. Allow the microphone from the icon near the address bar or in your site settings, then try again.</p>
+      <button id="retry-mic-btn" class="btn btn-amber" type="button">Try again</button>
+    </div>
+  </section>
+
+  <!-- ── Feed ── -->
+  <section id="feed" class="feed-section">
+    <div class="feed-head">
+      <h2 id="feed-title">Feed</h2>
+      <span id="feed-sub" class="feed-sub">newest first</span>
+    </div>
+    <div id="feed-empty" class="feed-empty" hidden>
+      <p id="feed-empty-1">No sounds yet.</p>
+      <p id="feed-empty-2">Record your first 10 seconds.</p>
+    </div>
+    <div id="feed-list" class="grid feed-list"></div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <a id="footer-about" class="footer-link" href="../">← About Neiro</a>
+  <span class="footer-note">Part of CHUNK-jp Wonder — © 2026 CHUNK-jp</span>
+</footer>
+
+<noscript><p style="padding:24px; text-align:center;">Neiro requires JavaScript.</p></noscript>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

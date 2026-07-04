@@ -1,0 +1,31 @@
+{
+  "name": "Neiro — 10秒の音を、重ねる",
+  "short_name": "Neiro",
+  "description": "10秒の音声を投稿・重ね合わせできるSNS型PWA。Part of CHUNK-jp Wonder.",
+  "lang": "ja",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#09090B",
+  "theme_color": "#F59E0B",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
