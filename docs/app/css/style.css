@@ -230,6 +230,8 @@ body {
 .feed-head h2 { font-size: 19px; font-weight: 700; letter-spacing: -0.02em; }
 .feed-sub { font-size: 12px; color: #52525B; font-family: var(--mono); }
 .feed-empty { text-align: center; padding: 48px 0; color: var(--muted); font-size: 14px; line-height: 2; }
+.feed-head-spacer { flex: 1; }
+.feed-head .btn-lang { text-decoration: none; }
 
 .grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
 

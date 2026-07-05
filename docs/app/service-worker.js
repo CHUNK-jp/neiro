@@ -2,14 +2,18 @@
 // Cache-first for same-scope static assets; navigations fall back to the
 // cached shell when the network is unavailable.
 
-const CACHE_NAME = 'neiro-app-v2';
+const CACHE_NAME = 'neiro-app-v3';
 
 const ASSETS = [
   './',
   './index.html',
+  './mix.html',
   './manifest.json',
   './css/style.css',
+  './css/mix.css',
   './js/app.js',
+  './js/mix-app.js',
+  './js/mix-engine.js',
   './js/recorder.js',
   './js/audio-mixer.js',
   './js/audio-analysis.js',

@@ -59,6 +59,7 @@ const layerCache = new Map(); // post.id -> [{buffer, analysis}]
 const STATIC_TEXT = {
   'nav-feed-link': 'navFeed',
   'nav-about-link': 'navAbout',
+  'nav-mix-link': 'mixNav',
   'install-btn': 'install',
   'lang-btn': 'langToggle',
   'rec-hint': 'recHint',
@@ -76,6 +77,7 @@ const STATIC_TEXT = {
   'feed-sub': 'feedSub',
   'feed-empty-1': 'feedEmpty1',
   'feed-empty-2': 'feedEmpty2',
+  'feed-mix-link': 'mixNav',
   'layer-banner-hint': 'layerBannerHint',
   'footer-about': 'footerAbout',
 };
@@ -415,17 +417,21 @@ async function postRecording() {
   const target = state.layerTarget;
   const title = els.titleInput.value.trim() || defaultTitle(new Date(), t);
   let analysis = null;
+  let duration = 0;
   try {
-    analysis = analyzeBuffer(await recordedBufferOriginal());
+    const original = await recordedBufferOriginal();
+    analysis = analyzeBuffer(original);
+    duration = original.duration;
   } catch (err) {
     console.warn('[neiro] analysis failed, treating as ambient:', err);
     analysis = { kind: 'ambient', bpm: 0, firstOnset: 0 };
+    duration = 0;
   }
   const newLayer = {
     blob: state.recordedBlob,
     type: state.recordedBlob.type || '',
     pitch: state.pitch,
-    analysis: { kind: analysis.kind, bpm: analysis.bpm, firstOnset: analysis.firstOnset },
+    analysis: { kind: analysis.kind, bpm: analysis.bpm, firstOnset: analysis.firstOnset, duration },
   };
   const post = {
     id: crypto.randomUUID(),

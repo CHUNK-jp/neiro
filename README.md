@@ -19,6 +19,7 @@
    - **リズム音**（手拍子・タップ・鼻歌等）: オンセット検出＋BPM推定でテンポグリッドに整列。ループ長をビート単位にスナップし、短いフレーズはループを埋めるよう反復。**タイムストレッチはしない**（ノービルド素JSでの品質確保が困難なため、境界スナップ方式を採用）
    - **環境音**（雨・喧騒等）: グリッド無視。ループ繋ぎ目をイコールパワー・クロスフェードで自然に
    - **共通**: マスターバスに軽いコンプレッション＋生成IRのコンボリューションリバーブで「同じ空間」の質感
+8. **MIX Studio** — アーカイブから複数の音を選び、質感（そのまま/残響/揺らぎ/包む）と「今日の心の天気」ムードを選んでオフラインレンダリングされた1本のMIX音源を生成。音楽的な土台（ドローン/パッド）の合成付き。結果はシェアまたはFeedへ投稿できる（`docs/app/mix.html`）
 
 保存はすべてブラウザ内（IndexedDB）。サーバーサイドはありません。直近50件を超えた投稿は古い順に自動削除されます。各投稿は自分を構成する全レイヤーのBlobを保持するため、親投稿が削除されても子の再生は壊れません。
 
@@ -31,11 +32,15 @@ neiro/
 │   ├── .nojekyll            ← Jekyllビルド回避（必須）
 │   └── app/                 ← 本体PWA
 │       ├── index.html
+│       ├── mix.html
 │       ├── manifest.json
 │       ├── service-worker.js
 │       ├── css/style.css
+│       ├── css/mix.css
 │       ├── js/
 │       │   ├── app.js             ← エントリーポイント
+│       │   ├── mix-app.js
+│       │   ├── mix-engine.js
 │       │   ├── recorder.js        ← MediaRecorder（10秒録音）
 │       │   ├── audio-mixer.js     ← 再生計画・ミキシング・ループ・マスターFX
 │       │   ├── audio-analysis.js  ← オンセット検出・BPM推定・分類
@@ -74,4 +79,4 @@ node --test "tests/*.test.mjs"
 
 GitHub Pages（main branch /docs）。`docs/` 配下をpushすれば反映されます。`.nojekyll` を削除しないこと。
 
-**重要**: Service Workerはcache-firstのため、`docs/app/` 内のファイルを変更したデプロイでは必ず `service-worker.js` の `CACHE_NAME` をbumpすること（例: `neiro-app-v2` → `neiro-app-v3`）。bumpしないと既存ユーザーに更新が届きません。
+**重要**: Service Workerはcache-firstのため、`docs/app/` 内のファイルを変更したデプロイでは必ず `service-worker.js` の `CACHE_NAME` をbumpすること（例: `neiro-app-v3` → `neiro-app-v4`）。bumpしないと既存ユーザーに更新が届きません。

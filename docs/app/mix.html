@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Neiro MIX Studio</title>
+<meta name="theme-color" content="#09090B">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="stylesheet" href="css/mix.css">
+</head>
+<body>
+
+<div id="mix-root">
+  <div class="mix-shell">
+
+    <!-- Top bar: back / screen label / lang pill -->
+    <header class="top-bar">
+      <div class="top-bar-left">
+        <span id="back-btn" class="back-btn" hidden>‹</span>
+      </div>
+      <div id="screen-label" class="screen-label"></div>
+      <div id="lang-pill" class="lang-pill"></div>
+    </header>
+
+    <!-- Screen 0: Feed — select sounds -->
+    <section id="screen-0" class="screen">
+      <div class="content-pad">
+        <h1 id="feed-title" class="mix-h1"></h1>
+        <p id="feed-sub" class="mix-sub"></p>
+        <div id="sounds-scroll" class="sounds-scroll">
+          <div id="sounds-grid" class="sounds-grid"></div>
+        </div>
+        <div id="continue-bar" class="continue-bar" hidden>
+          <button id="continue-btn" class="btn-amber-pill" type="button"></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screen 1: Texture — per-sound preset -->
+    <section id="screen-1" class="screen" hidden>
+      <div class="content-pad">
+        <h1 id="tex-title" class="mix-h1"></h1>
+        <p id="tex-sub" class="mix-sub"></p>
+        <div id="tex-rows" class="tex-rows"></div>
+        <div class="bottom-bar">
+          <button id="tex-next-btn" class="btn-amber-pill" type="button"></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screen 2: Mood + music foundation -->
+    <section id="screen-2" class="screen" hidden>
+      <div class="content-pad">
+        <h1 id="mood-title" class="mix-h1"></h1>
+        <p id="mood-sub" class="mix-sub"></p>
+        <div class="mood-scroll">
+          <div id="mood-grid" class="mood-grid"></div>
+          <div id="music-toggle-row" class="music-toggle-row" hidden>
+            <div id="music-switch" class="music-switch on">
+              <div class="music-knob"></div>
+            </div>
+            <div>
+              <div id="music-label" class="music-text-label"></div>
+              <div id="music-desc" class="music-text-desc"></div>
+            </div>
+          </div>
+        </div>
+        <div class="bottom-bar">
+          <button id="mix-btn" class="btn-amber-pill" type="button" disabled></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screen 3: Generating -->
+    <section id="screen-3" class="screen screen-gen" hidden>
+      <div id="ripple-stage" class="ripple-stage"></div>
+      <div class="gen-text">
+        <div id="gen-line" class="gen-line"></div>
+        <div id="gen-sub" class="gen-sub"></div>
+      </div>
+    </section>
+
+    <!-- Screen 4: Result -->
+    <section id="screen-4" class="screen" hidden>
+      <div class="content-pad">
+        <div id="result-eyebrow" class="result-eyebrow"></div>
+        <h1 id="result-title" class="mix-h1"></h1>
+        <p id="result-meta" class="mix-sub result-meta-sub"></p>
+        <div class="result-scroll">
+          <div id="result-grid" class="result-grid">
+            <div id="artwork-card" class="artwork-card">
+              <div class="artwork-overlay"></div>
+              <div class="artwork-inner">
+                <div class="artwork-header">
+                  <span class="artwork-brand">NEIRO</span>
+                  <span id="artwork-icon" class="artwork-icon"></span>
+                </div>
+                <div id="artwork-wave" class="artwork-wave"></div>
+                <div id="artwork-title-el" class="artwork-title"></div>
+                <div id="artwork-dur" class="artwork-dur"></div>
+              </div>
+            </div>
+            <div class="result-controls">
+              <div class="playback-row">
+                <button id="play-btn" class="play-btn" type="button">▶</button>
+                <div id="progress-bars" class="progress-bars"></div>
+              </div>
+              <div class="share-row">
+                <button id="share-btn" class="btn-outline-pill" type="button"></button>
+                <button id="post-btn" class="btn-amber-pill result-post-btn" type="button"></button>
+              </div>
+              <div id="new-mix-btn" class="new-mix-btn"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<noscript><p style="padding:24px;text-align:center;color:#F4E9D8;">Neiro requires JavaScript.</p></noscript>
+
+<script type="module" src="js/mix-app.js"></script>
+</body>
+</html>
