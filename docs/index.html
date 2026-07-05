@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Neiro — 10-second collaborative audio SNS</title>
-<meta name="description" content="Capture a sound. Layer it on someone else's. Build music together — one clip at a time.">
+<title>Neiro — a 10-second sound diary that becomes music</title>
+<meta name="description" content="Capture 10-second sounds, collect your own fragments, layer them, and mix them into music — all in your browser. No install, no account.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -26,6 +26,10 @@
   .step-card-highlight:hover { border-color:rgba(245,158,11,0.28); background:rgba(245,158,11,0.06); }
   .footer-link:hover { color:#F59E0B; }
 
+  @media (max-width: 640px) {
+    .nav-wonder-badge { display: none !important; }
+    body { overflow-x: hidden; }
+  }
   @media (max-width: 860px) {
     .hero-grid { grid-template-columns: 1fr !important; }
     .hero-mock { display: none; }
@@ -51,7 +55,7 @@
         <span style="font-size:16px; font-weight:700; letter-spacing:-0.03em; color:#FAFAFA; font-family:'JetBrains Mono',monospace;">Neiro</span>
         <span style="font-size:11px; color:#52525B; font-family:'JetBrains Mono',monospace; letter-spacing:0.02em;">音色</span>
       </a>
-      <div style="display:inline-flex; align-items:center; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.18); border-radius:100px; padding:3px 10px; flex-shrink:0;">
+      <div class="nav-wonder-badge" style="display:inline-flex; align-items:center; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.18); border-radius:100px; padding:3px 10px; flex-shrink:0;">
         <span style="font-size:10px; color:#F59E0B; font-weight:600; letter-spacing:0.04em; text-transform:uppercase;">CHUNK-jp Wonder</span>
       </div>
       <div style="flex:1;"></div>
@@ -75,7 +79,7 @@
       <div style="animation:fade-up 0.6s ease both;">
         <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(245,158,11,0.07); border:1px solid rgba(245,158,11,0.15); border-radius:100px; padding:5px 14px; margin-bottom:32px;">
           <div style="width:5px; height:5px; background:#F59E0B; border-radius:50%; animation:pulse-dot 2.4s ease-in-out infinite;"></div>
-          <span style="font-size:12px; color:#F59E0B; font-weight:500; font-family:'JetBrains Mono',monospace; letter-spacing:-0.01em;">10-second collaborative audio SNS</span>
+          <span style="font-size:12px; color:#F59E0B; font-weight:500; font-family:'JetBrains Mono',monospace; letter-spacing:-0.01em;">10-second sound diary → music</span>
         </div>
 
         <h1 class="hero-title" style="font-size:68px; font-weight:700; line-height:1.0; letter-spacing:-0.04em; margin-bottom:24px; text-wrap:balance;">
@@ -83,7 +87,7 @@
         </h1>
 
         <p style="font-size:17px; color:#71717A; line-height:1.75; max-width:420px; margin-bottom:36px; text-wrap:pretty;">
-          Capture a sound. Layer it on someone else's. Build music together — one clip at a time.
+          Capture a sound. Collect your own fragments. Layer and mix them into music — all yours.
         </p>
 
         <div style="max-width:420px; padding:14px 20px; background:rgba(245,158,11,0.04); border-left:2px solid rgba(245,158,11,0.28); border-radius:0 8px 8px 0; margin-bottom:36px;">
@@ -120,7 +124,7 @@
             </div>
             <div style="flex:1; background:#1C1C1F; border-radius:4px; padding:4px 10px; display:flex; align-items:center; gap:6px;">
               <div style="width:4px; height:4px; border-radius:50%; background:#F59E0B; animation:pulse-dot 2s ease-in-out infinite;"></div>
-              <span style="font-size:10px; color:#52525B; font-family:'JetBrains Mono',monospace;">neiro.app / stack / #2847</span>
+              <span style="font-size:10px; color:#52525B; font-family:'JetBrains Mono',monospace;">neiro.app / my sounds</span>
             </div>
           </div>
 
@@ -130,8 +134,8 @@
               <svg viewBox="0 0 16 16" fill="none" width="11" height="11">
                 <path d="M1 8 L3 4 L5 12 L7 6 L9 10 L11 5 L13 11 L15 8" stroke="#F59E0B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
               </svg>
-              <span style="font-size:12px; font-weight:700; color:#FAFAFA; letter-spacing:-0.02em; font-family:'JetBrains Mono',monospace;">stack #2847</span>
-              <span style="font-size:10px; color:#52525B;">3 layers · 10 sec</span>
+              <span style="font-size:12px; font-weight:700; color:#FAFAFA; letter-spacing:-0.02em; font-family:'JetBrains Mono',monospace;">my mix · night-quiet</span>
+              <span style="font-size:10px; color:#52525B;">3 sounds · 10 sec</span>
             </div>
             <div style="display:inline-flex; align-items:center; gap:5px; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.15); border-radius:100px; padding:3px 9px;">
               <div style="width:4px; height:4px; border-radius:50%; background:#F59E0B; animation:pulse-dot 1.6s ease-in-out infinite;"></div>
@@ -158,11 +162,11 @@
               <div style="width:74px; flex-shrink:0; display:flex; flex-direction:column; align-items:flex-end; gap:2px; padding-right:4px;">
                 <div style="display:flex; align-items:center; gap:4px;">
                   <div style="width:16px; height:16px; border-radius:50%; background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.24); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-                    <span style="font-size:6px; font-weight:700; color:#F59E0B;">RG</span>
+                    <span style="font-size:6px; font-weight:700; color:#F59E0B;">RR</span>
                   </div>
-                  <span style="font-size:9px; font-weight:600; color:#A1A1AA; white-space:nowrap;">@rainstorm_g</span>
+                  <span style="font-size:9px; font-weight:600; color:#A1A1AA; white-space:nowrap;">Rooftop rain</span>
                 </div>
-                <span style="font-size:8px; color:#3F3F46; font-style:italic;">Rooftop rain</span>
+                <span style="font-size:8px; color:#3F3F46; font-style:italic;">rec yesterday</span>
               </div>
               <div style="flex:1; height:46px; background:rgba(245,158,11,0.04); border:1px solid rgba(245,158,11,0.12); border-radius:6px; position:relative; overflow:hidden; display:flex; align-items:center; padding:0 4px;">
                 <div style="position:absolute; top:0; bottom:0; width:1.5px; background:rgba(245,158,11,0.65); animation:playhead 10s linear infinite; pointer-events:none;"></div>
@@ -216,11 +220,11 @@
               <div style="width:74px; flex-shrink:0; display:flex; flex-direction:column; align-items:flex-end; gap:2px; padding-right:4px;">
                 <div style="display:flex; align-items:center; gap:4px;">
                   <div style="width:16px; height:16px; border-radius:50%; background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.24); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-                    <span style="font-size:6px; font-weight:700; color:#10B981;">KF</span>
+                    <span style="font-size:6px; font-weight:700; color:#10B981;">MB</span>
                   </div>
-                  <span style="font-size:9px; font-weight:600; color:#A1A1AA; white-space:nowrap;">@kafu</span>
+                  <span style="font-size:9px; font-weight:600; color:#A1A1AA; white-space:nowrap;">Morning birds</span>
                 </div>
-                <span style="font-size:8px; color:#3F3F46; font-style:italic;">Morning grind</span>
+                <span style="font-size:8px; color:#3F3F46; font-style:italic;">rec 6:40 am</span>
               </div>
               <div style="flex:1; height:46px; background:rgba(16,185,129,0.04); border:1px solid rgba(16,185,129,0.12); border-radius:6px; position:relative; overflow:hidden; display:flex; align-items:center; padding:0 4px;">
                 <div style="position:absolute; top:0; bottom:0; width:1.5px; background:rgba(16,185,129,0.55); animation:playhead 10s linear infinite; pointer-events:none;"></div>
@@ -274,11 +278,11 @@
               <div style="width:74px; flex-shrink:0; display:flex; flex-direction:column; align-items:flex-end; gap:2px; padding-right:4px;">
                 <div style="display:flex; align-items:center; gap:4px;">
                   <div style="width:16px; height:16px; border-radius:50%; background:rgba(139,92,246,0.12); border:1px solid rgba(139,92,246,0.24); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-                    <span style="font-size:6px; font-weight:700; color:#8B5CF6;">HK</span>
+                    <span style="font-size:6px; font-weight:700; color:#8B5CF6;">LH</span>
                   </div>
-                  <span style="font-size:9px; font-weight:600; color:#A1A1AA; white-space:nowrap;">@hirata_k</span>
+                  <span style="font-size:9px; font-weight:600; color:#A1A1AA; white-space:nowrap;">Late-night hum</span>
                 </div>
-                <span style="font-size:8px; color:#3F3F46; font-style:italic;">G minor, 3am</span>
+                <span style="font-size:8px; color:#3F3F46; font-style:italic;">rec 1:03 am</span>
               </div>
               <div style="flex:1; height:46px; background:rgba(139,92,246,0.04); border:1px solid rgba(139,92,246,0.12); border-radius:6px; position:relative; overflow:hidden; display:flex; align-items:center; padding:0 4px;">
                 <div style="position:absolute; top:0; bottom:0; width:1.5px; background:rgba(139,92,246,0.55); animation:playhead 10s linear infinite; pointer-events:none;"></div>
@@ -330,13 +334,13 @@
             <!-- Track 4: ghost / add your layer -->
             <div style="display:flex; align-items:center; height:50px; gap:8px;">
               <div style="width:74px; flex-shrink:0; display:flex; flex-direction:column; align-items:flex-end; gap:2px; padding-right:4px;">
-                <span style="font-size:9px; color:#3F3F46;">your layer</span>
+                <span style="font-size:9px; color:#3F3F46;">tomorrow?</span>
               </div>
               <div class="layer-box" style="flex:1; height:46px; background:#111113; border:1.5px dashed #27272A; border-radius:6px; display:flex; align-items:center; justify-content:center; gap:7px; cursor:pointer;">
                 <div style="width:18px; height:18px; border-radius:50%; background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.2); display:flex; align-items:center; justify-content:center;">
                   <svg viewBox="0 0 10 10" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" width="7" height="7"><path d="M5 1v8M1 5h8"></path></svg>
                 </div>
-                <span style="font-size:10px; color:#52525B; font-weight:500;">Layer your 10 seconds</span>
+                <span style="font-size:10px; color:#52525B; font-weight:500;">Layer your next 10 seconds</span>
               </div>
             </div>
 
@@ -394,7 +398,7 @@
           <p style="font-size:14px; color:#71717A; line-height:1.7;">Hit record. 10 seconds. Done. No editing, no setup — just the sound you heard right now.</p>
         </div>
 
-        <!-- Layer on anyone -->
+        <!-- Layer your own sounds -->
         <div class="feature-card" style="background:#111113; border:1px solid #1E1E23; border-radius:16px; padding:32px 36px; position:relative; overflow:hidden;">
           <div style="position:absolute; top:0; right:0; width:160px; height:160px; background:radial-gradient(ellipse at top right,rgba(245,158,11,0.05),transparent 65%); pointer-events:none;"></div>
           <div style="width:44px; height:44px; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.16); border-radius:11px; display:flex; align-items:center; justify-content:center; margin-bottom:18px;">
@@ -402,8 +406,8 @@
               <path d="M2 14l8 4 8-4M2 10l8 4 8-4M2 6l8 4 8-4"></path>
             </svg>
           </div>
-          <h3 style="font-size:18px; font-weight:700; letter-spacing:-0.02em; margin-bottom:8px;">Layer on anyone</h3>
-          <p style="font-size:14px; color:#71717A; line-height:1.7;">Found a clip that moves you? Add your 10 seconds on top. Music builds one voice at a time.</p>
+          <h3 style="font-size:18px; font-weight:700; letter-spacing:-0.02em; margin-bottom:8px;">Layer your own sounds</h3>
+          <p style="font-size:14px; color:#71717A; line-height:1.7;">Add today's 10 seconds on top of what you recorded before. Hear your archive grow into something bigger.</p>
         </div>
 
         <!-- Loop & listen -->
@@ -418,7 +422,7 @@
             </svg>
           </div>
           <h3 style="font-size:18px; font-weight:700; letter-spacing:-0.02em; margin-bottom:8px;">Loop &amp; listen</h3>
-          <p style="font-size:14px; color:#71717A; line-height:1.7;">Every stack loops seamlessly. Hear how your sound fits — or clashes — with what came before.</p>
+          <p style="font-size:14px; color:#71717A; line-height:1.7;">Your mix loops seamlessly. Hear how your sound fits — or clashes — with what came before.</p>
         </div>
 
         <!-- No install -->
@@ -439,6 +443,84 @@
     </div>
   </section>
 
+  <!-- ── MIX STUDIO ── -->
+  <section style="padding:0 40px 80px;">
+    <div style="max-width:1100px; margin:0 auto;">
+
+      <div style="text-align:center; margin-bottom:48px;">
+        <span style="font-size:11px; font-weight:600; color:#52525B; text-transform:uppercase; letter-spacing:0.1em; display:block; margin-bottom:12px;">Turn your archive into a piece</span>
+        <h2 style="font-size:26px; font-weight:700; letter-spacing:-0.03em; color:#FAFAFA;">MIX Studio</h2>
+      </div>
+
+      <div class="features-grid" style="display:grid; grid-template-columns:repeat(2,1fr); gap:14px; margin-bottom:36px;">
+
+        <!-- Pick sounds -->
+        <div class="feature-card" style="background:#111113; border:1px solid #1E1E23; border-radius:16px; padding:32px 36px; position:relative; overflow:hidden;">
+          <div style="position:absolute; top:0; right:0; width:160px; height:160px; background:radial-gradient(ellipse at top right,rgba(245,158,11,0.05),transparent 65%); pointer-events:none;"></div>
+          <div style="width:44px; height:44px; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.16); border-radius:11px; display:flex; align-items:center; justify-content:center; margin-bottom:18px;">
+            <svg viewBox="0 0 20 20" fill="none" stroke="#F59E0B" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+              <rect x="3" y="4" width="14" height="3" rx="1"></rect>
+              <rect x="3" y="9" width="14" height="3" rx="1"></rect>
+              <rect x="3" y="14" width="9" height="3" rx="1"></rect>
+            </svg>
+          </div>
+          <h3 style="font-size:18px; font-weight:700; letter-spacing:-0.02em; margin-bottom:8px;">Pick your sounds</h3>
+          <p style="font-size:14px; color:#71717A; line-height:1.7;">Choose any clips from your archive — a rainstorm from Tuesday, a late-night hum, whatever caught your ear.</p>
+        </div>
+
+        <!-- Set textures -->
+        <div class="feature-card" style="background:#111113; border:1px solid #1E1E23; border-radius:16px; padding:32px 36px; position:relative; overflow:hidden;">
+          <div style="position:absolute; top:0; right:0; width:160px; height:160px; background:radial-gradient(ellipse at top right,rgba(245,158,11,0.05),transparent 65%); pointer-events:none;"></div>
+          <div style="display:flex; gap:10px; margin-bottom:18px; flex-wrap:wrap;">
+            <span style="font-size:13px; color:#FAFAFA; font-family:'JetBrains Mono',monospace;">◈ Natural</span>
+            <span style="font-size:13px; color:#60A5FA; font-family:'JetBrains Mono',monospace;">◌ Echo</span>
+            <span style="font-size:13px; color:#A78BFA; font-family:'JetBrains Mono',monospace;">∿ Wobble</span>
+            <span style="font-size:13px; color:#F59E0B; font-family:'JetBrains Mono',monospace;">● Warm</span>
+          </div>
+          <h3 style="font-size:18px; font-weight:700; letter-spacing:-0.02em; margin-bottom:8px;">Set each texture</h3>
+          <p style="font-size:14px; color:#71717A; line-height:1.7;">Give every sound its own character — dry and present, echoing, gently pitch-drifting, or warmly colored.</p>
+        </div>
+
+        <!-- Choose mood -->
+        <div class="feature-card" style="background:#111113; border:1px solid #1E1E23; border-radius:16px; padding:32px 36px; position:relative; overflow:hidden;">
+          <div style="position:absolute; top:0; right:0; width:160px; height:160px; background:radial-gradient(ellipse at top right,rgba(245,158,11,0.05),transparent 65%); pointer-events:none;"></div>
+          <div style="display:flex; gap:10px; margin-bottom:18px; flex-wrap:wrap;">
+            <span style="font-size:13px; color:#F59E0B; font-family:'JetBrains Mono',monospace;">☀ Sunny</span>
+            <span style="font-size:13px; color:#60A5FA; font-family:'JetBrains Mono',monospace;">☂ Rainy</span>
+            <span style="font-size:13px; color:#A78BFA; font-family:'JetBrains Mono',monospace;">☾ Night-quiet</span>
+            <span style="font-size:13px; color:#6EE7B7; font-family:'JetBrains Mono',monospace;">〜 Still breeze</span>
+          </div>
+          <h3 style="font-size:18px; font-weight:700; letter-spacing:-0.02em; margin-bottom:8px;">Today's inner weather</h3>
+          <p style="font-size:14px; color:#71717A; line-height:1.7;">Pick a mood and Neiro arranges everything to match: rhythmic sounds snap to a shared tempo, ambient sounds loop with seamless crossfades, a quiet generated foundation and shared reverb hold it all together.</p>
+        </div>
+
+        <!-- Share -->
+        <div class="feature-card" style="background:#111113; border:1px solid #1E1E23; border-radius:16px; padding:32px 36px; position:relative; overflow:hidden;">
+          <div style="position:absolute; top:0; right:0; width:160px; height:160px; background:radial-gradient(ellipse at top right,rgba(245,158,11,0.05),transparent 65%); pointer-events:none;"></div>
+          <div style="width:44px; height:44px; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.16); border-radius:11px; display:flex; align-items:center; justify-content:center; margin-bottom:18px;">
+            <svg viewBox="0 0 20 20" fill="none" stroke="#F59E0B" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+              <circle cx="15" cy="5" r="2"></circle>
+              <circle cx="5" cy="10" r="2"></circle>
+              <circle cx="15" cy="15" r="2"></circle>
+              <path d="M7 9l6-3M7 11l6 3"></path>
+            </svg>
+          </div>
+          <h3 style="font-size:18px; font-weight:700; letter-spacing:-0.02em; margin-bottom:8px;">Share or post</h3>
+          <p style="font-size:14px; color:#71717A; line-height:1.7;">Export the finished mix, share a link, or post it back to your feed.</p>
+        </div>
+
+      </div>
+
+      <div style="text-align:center;">
+        <a href="https://chunk-jp.github.io/neiro/app/mix.html" target="_blank" class="btn-amber" style="display:inline-flex; align-items:center; gap:8px; background:#F59E0B; color:#0C0900; font-size:15px; font-weight:600; padding:13px 28px; border-radius:10px; text-decoration:none;">
+          Open MIX Studio
+          <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><path d="M2 7h10M7 2l5 5-5 5"></path></svg>
+        </a>
+      </div>
+
+    </div>
+  </section>
+
   <!-- ── DEVELOPER STORY ── -->
   <section style="padding:0 40px 80px;">
     <div style="max-width:1100px; margin:0 auto;">
@@ -448,7 +530,7 @@
         <div style="position:relative; padding:64px 72px; text-align:center;">
           <div style="display:inline-block; font-size:11px; font-weight:600; color:#52525B; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:20px;">Why I built this</div>
           <blockquote style="font-size:20px; color:#A1A1AA; line-height:1.85; max-width:680px; margin:0 auto 28px; font-style:italic; text-wrap:pretty;">
-            "I kept hearing interesting sounds — a café, a rainstorm, a guitar riff — and wanting to share them with someone who would <span style="color:#FAFAFA; font-style:normal; font-weight:500;">add to them</span>, not just listen. Every music app I tried wanted me to make a finished song. Neiro is the opposite: start something unfinished, and see where it goes."
+            "I kept hearing interesting sounds — a café, a rainstorm, a guitar riff — and wanting to share them with someone who would <span style="color:#FAFAFA; font-style:normal; font-weight:500;">add to them</span>, not just listen — for now, that someone is the you of tomorrow. Every music app I tried wanted me to make a finished song. Neiro is the opposite: start something unfinished, and see where it goes."
           </blockquote>
           <div style="display:inline-flex; align-items:center; gap:10px;">
             <div style="width:32px; height:32px; border-radius:50%; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.18); display:flex; align-items:center; justify-content:center;">
@@ -502,8 +584,8 @@
               <span style="font-size:14px; font-weight:700; color:#F59E0B; font-family:'JetBrains Mono',monospace;">3</span>
             </div>
           </div>
-          <h4 style="font-size:16px; font-weight:700; letter-spacing:-0.02em; margin-bottom:8px;">Post or layer</h4>
-          <p style="font-size:13px; color:#71717A; line-height:1.7;">Post your clip to start a new stack, or add it to someone else's. Watch music grow.</p>
+          <h4 style="font-size:16px; font-weight:700; letter-spacing:-0.02em; margin-bottom:8px;">Layer or mix</h4>
+          <p style="font-size:13px; color:#71717A; line-height:1.7;">Post your clip to your feed, layer it on your earlier sounds, or take them all into MIX Studio. Your archive keeps growing.</p>
         </div>
 
       </div>
