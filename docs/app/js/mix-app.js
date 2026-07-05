@@ -680,6 +680,11 @@ function applyTranslations() {
   document.documentElement.lang = getLang();
   renderTopBar();
 
+  const tabRecordLabel = document.getElementById('tab-record-label');
+  const tabMixLabel = document.getElementById('tab-mix-label');
+  if (tabRecordLabel) tabRecordLabel.textContent = t('tabRecord');
+  if (tabMixLabel) tabMixLabel.textContent = t('tabMix');
+
   const screen = state.screen;
   if (screen === 0) renderScreen0();
   if (screen === 1) renderScreen1();
@@ -734,6 +739,11 @@ async function init() {
   initLang();
   document.documentElement.lang = getLang();
   renderTopBar();
+
+  const tabRecordLabel = document.getElementById('tab-record-label');
+  const tabMixLabel = document.getElementById('tab-mix-label');
+  if (tabRecordLabel) tabRecordLabel.textContent = t('tabRecord');
+  if (tabMixLabel) tabMixLabel.textContent = t('tabMix');
 
   let posts = [];
   try {

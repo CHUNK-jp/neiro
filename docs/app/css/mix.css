@@ -5,6 +5,8 @@
 
 [hidden] { display: none !important; }
 
+:root { --tab-bar-clearance: calc(64px + env(safe-area-inset-bottom, 0px)); }
+
 @keyframes twinkle {
   0%, 100% { opacity: 0.4; }
   50%       { opacity: 1; }
@@ -30,6 +32,7 @@ body {
 
 #mix-root {
   min-height: 100vh;
+  min-height: 100dvh;
   background: #09090B;
   display: flex;
   justify-content: center;
@@ -41,7 +44,12 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  padding: 0 0 20px;
+  min-height: 100dvh;
+  padding: 0;
+}
+
+@supports (height: 100dvh) {
+  .mix-shell { height: 100dvh; min-height: 0; }
 }
 
 /* ---- Top bar ---- */
@@ -147,7 +155,7 @@ body {
 
 .bottom-bar {
   flex-shrink: 0;
-  padding: 8px 0 4px;
+  padding: 8px 0 calc(8px + var(--tab-bar-clearance));
 }
 
 /* ---- Screen 0: Feed / sounds ---- */
@@ -167,7 +175,7 @@ body {
 
 .continue-bar {
   flex-shrink: 0;
-  padding: 12px 0 4px;
+  padding: 12px 0 calc(8px + var(--tab-bar-clearance));
 }
 
 /* Sound card */
@@ -514,6 +522,7 @@ body {
   gap: 28px;
   position: relative;
   overflow: hidden;
+  padding-bottom: var(--tab-bar-clearance);
 }
 
 .ripple-stage {
@@ -566,6 +575,7 @@ body {
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  padding-bottom: var(--tab-bar-clearance);
 }
 
 .result-grid {
@@ -714,6 +724,30 @@ body {
   padding-top: 4px;
   user-select: none;
 }
+
+/* ---- Bottom tab bar ---- */
+
+.tab-bar {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
+  display: flex;
+  background: rgba(9, 9, 11, 0.92);
+  border-top: 1px solid #18181B;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.tab-item {
+  flex: 1; min-height: 56px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.02em;
+  color: rgba(244, 233, 216, 0.45);
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tab-item.is-active { color: #F59E0B; }
+.tab-item:active { opacity: 0.7; }
 
 /* ---- Desktop ≥880px ---- */
 

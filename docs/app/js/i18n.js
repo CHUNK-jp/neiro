@@ -88,6 +88,8 @@ export const STRINGS = {
     mixMetaWith: (n) => `${n} sounds ・ with foundation`,
     mixMetaWithout: (n) => `${n} sounds ・ no foundation`,
     mixUntitled: 'Untitled mix',
+    tabRecord: 'Record',
+    tabMix: 'MIX',
   },
   ja: {
     appTagline: '10秒の音を、重ねる。',
@@ -172,6 +174,8 @@ export const STRINGS = {
     mixMetaWith: (n) => `${n}個のSOUND ・ 土台あり`,
     mixMetaWithout: (n) => `${n}個のSOUND ・ 土台なし`,
     mixUntitled: '無題のMIX',
+    tabRecord: '録音',
+    tabMix: 'MIX',
   },
 };
 

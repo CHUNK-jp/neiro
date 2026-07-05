@@ -80,6 +80,8 @@ const STATIC_TEXT = {
   'feed-mix-link': 'mixNav',
   'layer-banner-hint': 'layerBannerHint',
   'footer-about': 'footerAbout',
+  'tab-record-label': 'tabRecord',
+  'tab-mix-label': 'tabMix',
 };
 
 function applyTranslations() {
