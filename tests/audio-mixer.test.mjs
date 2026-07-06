@@ -5,6 +5,7 @@ import {
   computeLayerGain,
   computeStackPlan,
   AMBIENT_CROSSFADE_S,
+  MIX_LOOP_CROSSFADE_S,
 } from '../docs/app/js/audio-mixer.js';
 
 const buf = (duration) => ({ duration });
@@ -69,6 +70,22 @@ test('ambient crossfade never exceeds a quarter of the layer', () => {
   const plan = computeStackPlan([ambient(0.6)]);
   assert.ok(plan.layers[0].crossfade <= 0.15 + 1e-9);
   assert.ok(plan.layers[0].crossfade <= AMBIENT_CROSSFADE_S);
+});
+
+test('an explicit loopCrossfade overrides the ambient default', () => {
+  const plan = computeStackPlan([{ ...ambient(30), loopCrossfade: MIX_LOOP_CROSSFADE_S }]);
+  assert.ok(Math.abs(plan.layers[0].crossfade - MIX_LOOP_CROSSFADE_S) < 1e-9);
+});
+
+test('loopCrossfade override is still capped at a quarter of the layer duration', () => {
+  // 4s layer → quarter is 1s, well under the ~2.4s MIX override.
+  const plan = computeStackPlan([{ ...ambient(4), loopCrossfade: MIX_LOOP_CROSSFADE_S }]);
+  assert.ok(plan.layers[0].crossfade <= 1 + 1e-9);
+});
+
+test('layers without a loopCrossfade still use the plain ambient default', () => {
+  const plan = computeStackPlan([ambient(30)]);
+  assert.equal(plan.layers[0].crossfade, AMBIENT_CROSSFADE_S);
 });
 
 test('empty and micro layers produce an empty plan', () => {

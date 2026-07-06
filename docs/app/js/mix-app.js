@@ -2,7 +2,7 @@
 // Five screens: 0 Feed → 1 Texture → 2 Mood → 3 Generating → 4 Result.
 
 import { getAllPosts, addPost } from './storage.js';
-import { getContext, decodeBlob } from './audio-mixer.js';
+import { getContext, decodeBlob, StackPlayer, MIX_LOOP_CROSSFADE_S } from './audio-mixer.js';
 import { analyzeBuffer } from './audio-analysis.js';
 import { pitchShiftBuffer } from './audio-effects.js';
 import { renderMix, encodeWavBlob } from './mix-engine.js';
@@ -42,9 +42,10 @@ const state = {
   musicOn: true,
   rendered: null,      // AudioBuffer from renderMix
   wavBlob: null,       // lazy-encoded WAV blob
-  playSource: null,    // current AudioBufferSourceNode
-  playStartCtxTime: 0, // ctx.currentTime when play started
+  player: null,        // StackPlayer wrapping the rendered mix
+  playStartCtxTime: 0, // ctx.currentTime when the current play() started
   playRaf: 0,
+  loopOn: false,
   postBtnPosted: false,
 };
 
@@ -91,11 +92,16 @@ const els = {
   artworkTitleEl:  $('artwork-title-el'),
   artworkDur:      $('artwork-dur'),
   playBtn:         $('play-btn'),
+  loopBtn:         $('loop-btn'),
   progressBars:    $('progress-bars'),
   shareBtn:        $('share-btn'),
   postBtn:         $('post-btn'),
   newMixBtn:       $('new-mix-btn'),
 };
+
+// Same glyph as feed.js's LOOP_ICON — kept as a local copy since the two
+// pages don't share a rendering module.
+const LOOP_ICON = '<svg viewBox="0 0 16 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" width="14" height="12" aria-hidden="true"><path d="M1 4h9a3 3 0 010 6H9"></path><path d="M15 4l-2-2M15 4l-2 2"></path><path d="M15 10H6a3 3 0 010-6H7"></path><path d="M1 10l2-2M1 10l2 2"></path></svg>';
 
 // ---- Deterministic pseudo-random waveform ----
 
@@ -428,6 +434,11 @@ function renderScreen4() {
   state.postBtnPosted = false;
   els.newMixBtn.textContent = t('mixNew');
   els.playBtn.textContent = '▶';
+
+  els.loopBtn.innerHTML = LOOP_ICON;
+  els.loopBtn.setAttribute('aria-label', t('loop'));
+  els.loopBtn.setAttribute('aria-pressed', String(state.loopOn));
+  els.loopBtn.classList.toggle('is-active', state.loopOn);
 }
 
 function buildProgressBars() {
@@ -445,9 +456,10 @@ function buildProgressBars() {
 // ---- Playback ----
 
 function stopPlayback() {
-  if (state.playSource) {
-    try { state.playSource.stop(); } catch (_) {}
-    state.playSource = null;
+  if (state.player) {
+    state.player.onended = null;
+    state.player.stop();
+    state.player = null;
   }
   cancelAnimationFrame(state.playRaf);
   state.playRaf = 0;
@@ -461,50 +473,74 @@ function updateProgressBars(fraction) {
   }
 }
 
-function startPlayback() {
+// Ticks the progress bar off the StackPlayer's loop length rather than a
+// fixed end time — looping playback has no single "done", so the bar wraps
+// back to 0 at each iteration instead of freezing at 100%.
+function tick() {
+  const player = state.player;
+  if (!player || !player.playing) return;
+  const ctx = getContext();
+  const loopDur = player.duration;
+  const elapsed = Math.max(0, ctx.currentTime - state.playStartCtxTime);
+  const frac = player.loop && loopDur > 0
+    ? (elapsed % loopDur) / loopDur
+    : Math.min(1, loopDur > 0 ? elapsed / loopDur : 1);
+  updateProgressBars(frac);
+  if (player.loop || frac < 1) {
+    state.playRaf = requestAnimationFrame(tick);
+  }
+}
+
+async function startPlayback() {
   if (!state.rendered) return;
   stopPlayback();
 
   const ctx = getContext();
-  if (ctx.state === 'suspended') ctx.resume();
-
-  const src = ctx.createBufferSource();
-  src.buffer = state.rendered;
-  src.connect(ctx.destination);
-  src.start();
-  state.playSource = src;
-  state.playStartCtxTime = ctx.currentTime;
-  els.playBtn.textContent = '❚❚';
-
-  const duration = state.rendered.duration;
-
-  function tick() {
-    if (!state.playSource) return;
-    const elapsed = ctx.currentTime - state.playStartCtxTime;
-    const frac = Math.min(1, elapsed / duration);
-    updateProgressBars(frac);
-    if (frac < 1) {
-      state.playRaf = requestAnimationFrame(tick);
-    }
-  }
-  state.playRaf = requestAnimationFrame(tick);
-
-  src.onended = () => {
-    state.playSource = null;
+  // Single rendered layer, played through the same crossfade-aware looping
+  // player the Feed uses — see audio-mixer.js MIX_LOOP_CROSSFADE_S for why
+  // a mix layer needs a longer loop crossfade than a raw ambient take.
+  const layer = {
+    buffer: state.rendered,
+    analysis: { kind: 'ambient', bpm: 0, firstOnset: 0, loopCrossfade: MIX_LOOP_CROSSFADE_S },
+  };
+  const player = new StackPlayer(ctx, [layer]);
+  player.loop = state.loopOn;
+  player.onended = () => {
+    state.player = null;
     cancelAnimationFrame(state.playRaf);
+    state.playRaf = 0;
     els.playBtn.textContent = '▶';
     updateProgressBars(0);
   };
+
+  try {
+    state.player = player;
+    await player.play();
+  } catch (err) {
+    console.warn('[neiro] mix playback failed:', err);
+    state.player = null;
+    return;
+  }
+  state.playStartCtxTime = ctx.currentTime;
+  els.playBtn.textContent = '❚❚';
+  state.playRaf = requestAnimationFrame(tick);
 }
 
 function togglePlay() {
-  if (state.playSource) {
+  if (state.player) {
     stopPlayback();
     els.playBtn.textContent = '▶';
     updateProgressBars(0);
   } else {
     startPlayback();
   }
+}
+
+function toggleLoop() {
+  state.loopOn = !state.loopOn;
+  els.loopBtn.classList.toggle('is-active', state.loopOn);
+  els.loopBtn.setAttribute('aria-pressed', String(state.loopOn));
+  if (state.player) state.player.setLoop(state.loopOn);
 }
 
 // ---- Share / Post ----
@@ -653,6 +689,7 @@ async function startMix() {
 
   state.rendered = rendered;
   state.wavBlob = null;
+  state.loopOn = false;
   stopPlayback();
 
   goTo(4);
@@ -669,6 +706,7 @@ function resetMix() {
   state.musicOn = true;
   state.rendered = null;
   state.wavBlob = null;
+  state.loopOn = false;
   state.postBtnPosted = false;
   goTo(0);
   renderScreen0();
@@ -719,6 +757,7 @@ els.musicSwitch.addEventListener('click', () => {
 els.mixBtn.addEventListener('click', startMix);
 
 els.playBtn.addEventListener('click', togglePlay);
+els.loopBtn.addEventListener('click', toggleLoop);
 els.shareBtn.addEventListener('click', shareCard);
 els.postBtn.addEventListener('click', postToFeed);
 els.newMixBtn.addEventListener('click', resetMix);

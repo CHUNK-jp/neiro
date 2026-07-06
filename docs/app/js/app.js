@@ -1,7 +1,7 @@
 // app.js — entry point. Wires recorder, mixer, storage, feed and i18n.
 
 import { Recorder, formatCountdown, elapsedRatio, MAX_DURATION_MS } from './recorder.js';
-import { getContext, decodeBlob, StackPlayer } from './audio-mixer.js';
+import { getContext, decodeBlob, StackPlayer, MIX_LOOP_CROSSFADE_S } from './audio-mixer.js';
 import { analyzeBuffer } from './audio-analysis.js';
 import { pitchShiftBuffer, clampPitch, MIN_PITCH_SEMITONES, MAX_PITCH_SEMITONES } from './audio-effects.js';
 import * as storage from './storage.js';
@@ -108,8 +108,14 @@ async function layersForPost(post) {
     if (!layer || !layer.blob || !layer.blob.size) continue;
     try {
       let buffer = await decodeBlob(layer.blob, ctx);
-      const analysis = layer.analysis || analyzeBuffer(buffer);
+      let analysis = layer.analysis || analyzeBuffer(buffer);
       if (layer.pitch) buffer = pitchShiftBuffer(ctx, buffer, layer.pitch);
+      if (post.mix) {
+        // A MIX post's single layer is a fully-rendered track, not a raw take —
+        // never snap it to a beat grid, and use the longer MIX loop crossfade
+        // to mask the tail fade baked in by mix-engine.js's renderMix().
+        analysis = { ...analysis, kind: 'ambient', loopCrossfade: MIX_LOOP_CROSSFADE_S };
+      }
       decoded.push({ buffer, analysis });
     } catch (err) {
       console.warn('[neiro] skipping undecodable layer:', err);

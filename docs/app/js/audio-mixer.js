@@ -44,9 +44,17 @@ export function computeLayerGain(layerCount) {
 }
 
 export const AMBIENT_CROSSFADE_S = 0.25;
+// Rendered MIX tracks (mix-engine.js renderMix) bake a fixed ~2s tail fade
+// into the actual samples. Looping them with the normal short ambient
+// crossfade means the outgoing copy is already fading to silence for ~1.75s
+// before the next copy's crossfade window even starts — an audible dip.
+// A crossfade longer than that baked fade guarantees the incoming copy is
+// back at full volume by the time the outgoing one bottoms out, so the seam
+// reads as one continuous swell instead of a gap.
+export const MIX_LOOP_CROSSFADE_S = 2.4;
 export const EDGE_FADE_S = 0.006;
 
-// layers: [{ duration, kind: 'rhythmic'|'ambient', bpm, firstOnset }]
+// layers: [{ duration, kind: 'rhythmic'|'ambient', bpm, firstOnset, loopCrossfade? }]
 // Returns { tempo, loopDuration, layers: [plan] } where each plan is
 //   { kind, startOffset, playDuration, repeats, crossfade, sourceIndex }.
 // sourceIndex points back into the input array (too-short layers are
@@ -87,7 +95,7 @@ export function computeStackPlan(layers) {
       startOffset: 0,
       playDuration: layer.duration,
       repeats: 1,
-      crossfade: Math.min(AMBIENT_CROSSFADE_S, layer.duration / 4),
+      crossfade: Math.min(layer.loopCrossfade || AMBIENT_CROSSFADE_S, layer.duration / 4),
       sourceIndex: layer.sourceIndex,
     };
   });
@@ -165,7 +173,7 @@ function buildMasterBus(ctx) {
 
 const LOOP_LOOKAHEAD_MS = 150;
 
-// layers: [{ buffer: AudioBuffer, analysis: {kind,bpm,firstOnset} }]
+// layers: [{ buffer: AudioBuffer, analysis: {kind,bpm,firstOnset,loopCrossfade?} }]
 export class StackPlayer {
   constructor(ctx, layers) {
     this.ctx = ctx;
@@ -176,6 +184,7 @@ export class StackPlayer {
         kind: l.analysis ? l.analysis.kind : 'ambient',
         bpm: l.analysis ? l.analysis.bpm : 0,
         firstOnset: l.analysis ? l.analysis.firstOnset : 0,
+        loopCrossfade: l.analysis ? l.analysis.loopCrossfade : undefined,
       }))
     );
     this.duration = this.plan.loopDuration;
