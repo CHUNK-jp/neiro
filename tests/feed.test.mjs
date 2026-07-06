@@ -8,6 +8,7 @@ import {
   timeAgo,
   sanitizeTitle,
   MAX_TITLE_LENGTH,
+  filterFavorites,
 } from '../docs/app/js/feed.js';
 import { translator } from '../docs/app/js/i18n.js';
 
@@ -79,4 +80,19 @@ test('sanitizeTitle returns null for blank or whitespace-only input', () => {
   assert.equal(sanitizeTitle(''), null);
   assert.equal(sanitizeTitle(undefined), null);
   assert.equal(sanitizeTitle(null), null);
+});
+
+test('filterFavorites returns all posts unfiltered when off', () => {
+  const posts = [{ id: 'a', favorite: true }, { id: 'b' }, { id: 'c', favorite: false }];
+  assert.deepEqual(filterFavorites(posts, false), posts);
+});
+
+test('filterFavorites keeps only favorited posts when on, preserving order', () => {
+  const posts = [{ id: 'a', favorite: true }, { id: 'b' }, { id: 'c', favorite: true }];
+  assert.deepEqual(filterFavorites(posts, true).map((p) => p.id), ['a', 'c']);
+});
+
+test('filterFavorites treats missing/undefined favorite as not favorited', () => {
+  const posts = [{ id: 'a' }, { id: 'b', favorite: undefined }, { id: 'c', favorite: false }];
+  assert.deepEqual(filterFavorites(posts, true), []);
 });

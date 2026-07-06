@@ -235,6 +235,17 @@ body {
 .feed-head-spacer { flex: 1; }
 .feed-head .btn-lang { text-decoration: none; }
 
+.btn-fav-filter {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: transparent; color: var(--muted); border: 1px solid var(--border);
+  font-size: 12px; padding: 6px 12px; min-height: 32px; border-radius: 100px;
+  font-family: var(--mono); cursor: pointer; touch-action: manipulation;
+}
+.btn-fav-filter:hover { color: var(--amber); border-color: var(--amber-line); }
+.btn-fav-filter.is-active {
+  color: var(--amber); background: var(--amber-dim); border-color: var(--amber-line);
+}
+
 .grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
 
 .post-card {
@@ -260,6 +271,14 @@ body {
   cursor: pointer; touch-action: manipulation;
 }
 .btn-edit-title:hover { color: var(--amber); background: var(--amber-dim); }
+.btn-favorite {
+  display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  width: 24px; height: 24px; padding: 0;
+  background: none; border: none; border-radius: 6px; color: var(--faint);
+  cursor: pointer; touch-action: manipulation;
+}
+.btn-favorite:hover { color: var(--amber); background: var(--amber-dim); }
+.btn-favorite.is-active { color: var(--amber); }
 .post-title-input {
   font-family: inherit; font-size: 15px; font-weight: 700; letter-spacing: -0.01em;
   width: 100%; min-width: 0;

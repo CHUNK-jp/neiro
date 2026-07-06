@@ -20,6 +20,12 @@ export function layerCountLabel(post, t = defaultT) {
   return t('layerCount', post.layers ? post.layers.length : 0);
 }
 
+// Filters to favorited posts only, preserving whatever order `posts` is
+// already in (getAllPosts returns newest-first, so no re-sort needed here).
+export function filterFavorites(posts, onlyFavorites) {
+  return onlyFavorites ? posts.filter((post) => !!post.favorite) : posts;
+}
+
 export const MAX_TITLE_LENGTH = 32;
 
 // Trims and caps a candidate title; returns null when the result is empty
@@ -56,6 +62,8 @@ const STOP_ICON = '<svg viewBox="0 0 10 10" fill="currentColor" width="10" heigh
 const LOOP_ICON = '<svg viewBox="0 0 16 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" width="14" height="12" aria-hidden="true"><path d="M1 4h9a3 3 0 010 6H9"></path><path d="M15 4l-2-2M15 4l-2 2"></path><path d="M15 10H6a3 3 0 010-6H7"></path><path d="M1 10l2-2M1 10l2 2"></path></svg>';
 const LAYER_ICON = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" aria-hidden="true"><path d="M2 14l8 4 8-4M2 10l8 4 8-4M2 6l8 4 8-4"></path></svg>';
 const EDIT_ICON = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" width="12" height="12" aria-hidden="true"><path d="M10.5 2.5l3 3-8 8-3.5 1 1-3.5 8-8z"></path><path d="M9 4l3 3"></path></svg>';
+const STAR_ICON = '<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01L12 2z"></path></svg>';
+const STAR_OUTLINE_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" width="14" height="14" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01L12 2z"></path></svg>';
 
 function el(tag, className, html) {
   const node = document.createElement(tag);
@@ -64,7 +72,7 @@ function el(tag, className, html) {
   return node;
 }
 
-// Renders the whole feed. `state` = { playingId, loopIds:Set, confirmingDeleteId, editingId }.
+// Renders the whole feed. `state` = { playingId, loopIds:Set, confirmingDeleteId, editingId, favoritesOnly }.
 export function renderFeed(listEl, posts, handlers, state, t = defaultT) {
   listEl.textContent = '';
   for (const post of posts) {
@@ -112,6 +120,14 @@ function renderCard(post, handlers, state, t) {
     titleWrap.appendChild(lin);
   }
   head.appendChild(titleWrap);
+
+  const favorited = !!post.favorite;
+  const favBtn = el('button', 'btn-favorite' + (favorited ? ' is-active' : ''), favorited ? STAR_ICON : STAR_OUTLINE_ICON);
+  favBtn.type = 'button';
+  favBtn.setAttribute('aria-pressed', String(favorited));
+  favBtn.setAttribute('aria-label', t('favorite'));
+  favBtn.addEventListener('click', () => handlers.onFavoriteToggle(post));
+  head.appendChild(favBtn);
 
   if (playing) {
     head.appendChild(el('div', 'post-playing-badge', '<span class="dot"></span>PLAYING'));

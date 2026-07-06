@@ -5,7 +5,7 @@ import { getContext, decodeBlob, StackPlayer, MIX_LOOP_CROSSFADE_S } from './aud
 import { analyzeBuffer } from './audio-analysis.js';
 import { pitchShiftBuffer, clampPitch, MIN_PITCH_SEMITONES, MAX_PITCH_SEMITONES } from './audio-effects.js';
 import * as storage from './storage.js';
-import { renderFeed, defaultTitle, sanitizeTitle } from './feed.js';
+import { renderFeed, defaultTitle, sanitizeTitle, filterFavorites } from './feed.js';
 import { initLang, getLang, toggleLang, t } from './i18n.js';
 
 const els = {
@@ -31,6 +31,9 @@ const els = {
   discardBtn: document.getElementById('discard-btn'),
   feedList: document.getElementById('feed-list'),
   feedEmpty: document.getElementById('feed-empty'),
+  feedEmpty1: document.getElementById('feed-empty-1'),
+  feedEmpty2: document.getElementById('feed-empty-2'),
+  feedFavToggle: document.getElementById('feed-fav-toggle'),
   installBtn: document.getElementById('install-btn'),
   langBtn: document.getElementById('lang-btn'),
   retryMicBtn: document.getElementById('retry-mic-btn'),
@@ -46,6 +49,7 @@ const state = {
   loopIds: new Set(),
   confirmingDeleteId: null,
   editingId: null, // post whose title is currently being edited inline
+  favoritesOnly: false, // in-memory only; not persisted across reloads
 };
 
 let recorder = null;
@@ -94,6 +98,17 @@ function applyTranslations() {
   document.documentElement.lang = getLang();
   updateLayerBanner();
   setPreviewButton(previewPlayer ? previewPlayer.playing : false);
+  setFavToggleButton();
+}
+
+// The favorites-filter toggle has an icon alongside its label, so (like
+// setPreviewButton) it can't go through the STATIC_TEXT textContent map —
+// that would wipe the icon out.
+function setFavToggleButton() {
+  els.feedFavToggle.classList.toggle('is-active', state.favoritesOnly);
+  els.feedFavToggle.setAttribute('aria-pressed', String(state.favoritesOnly));
+  const label = els.feedFavToggle.querySelector('span');
+  if (label) label.textContent = t('favoritesFilter');
 }
 
 // --- Feed ---
@@ -132,8 +147,14 @@ async function refreshFeed() {
   } catch (err) {
     console.warn('[neiro] failed to load posts:', err);
   }
-  els.feedEmpty.hidden = posts.length > 0;
-  renderFeed(els.feedList, posts, feedHandlers, state, t);
+  const visible = filterFavorites(posts, state.favoritesOnly);
+  els.feedEmpty.hidden = visible.length > 0;
+  // Distinguish "no posts at all" from "filtered down to zero favorites" —
+  // the latter would be misleading with the default empty-state copy.
+  const noFavoritesYet = state.favoritesOnly && posts.length > 0 && visible.length === 0;
+  els.feedEmpty1.textContent = noFavoritesYet ? t('feedEmptyFav1') : t('feedEmpty1');
+  els.feedEmpty2.textContent = noFavoritesYet ? t('feedEmptyFav2') : t('feedEmpty2');
+  renderFeed(els.feedList, visible, feedHandlers, state, t);
 }
 
 function stopFeedPlayback() {
@@ -225,6 +246,15 @@ const feedHandlers = {
   onTitleCancel(post) {
     state.editingId = null;
     return refreshFeed();
+  },
+
+  async onFavoriteToggle(post) {
+    try {
+      await storage.setFavorite(post.id, !post.favorite);
+    } catch (err) {
+      console.warn('[neiro] failed to toggle favorite:', err);
+    }
+    await refreshFeed();
   },
 
   // Two-tap delete: first tap arms the button, second tap deletes.
@@ -542,6 +572,11 @@ els.retryMicBtn.addEventListener('click', () => setMode('idle'));
 els.langBtn.addEventListener('click', async () => {
   toggleLang();
   applyTranslations();
+  await refreshFeed();
+});
+els.feedFavToggle.addEventListener('click', async () => {
+  state.favoritesOnly = !state.favoritesOnly;
+  setFavToggleButton();
   await refreshFeed();
 });
 

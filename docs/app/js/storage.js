@@ -93,6 +93,17 @@ export async function renamePost(id, title) {
   return updated;
 }
 
+// Overwrites just the favorite flag of an existing post. Mirrors renamePost:
+// never prunes, since it's an in-place edit, not a new post.
+export async function setFavorite(id, favorite) {
+  const database = await db();
+  const existing = await getPost(id);
+  if (!existing) return null;
+  const updated = { ...existing, favorite: !!favorite };
+  await tx(database, 'readwrite', (store) => store.put(updated));
+  return updated;
+}
+
 export async function deletePost(id) {
   const database = await db();
   await tx(database, 'readwrite', (store) => store.delete(id));
