@@ -81,6 +81,18 @@ export async function addPost(post) {
   return post;
 }
 
+// Overwrites just the title of an existing post, leaving everything else
+// (layers, createdAt, etc.) untouched. Unlike addPost, this never prunes —
+// it's an in-place edit, not a new post.
+export async function renamePost(id, title) {
+  const database = await db();
+  const existing = await getPost(id);
+  if (!existing) return null;
+  const updated = { ...existing, title };
+  await tx(database, 'readwrite', (store) => store.put(updated));
+  return updated;
+}
+
 export async function deletePost(id) {
   const database = await db();
   await tx(database, 'readwrite', (store) => store.delete(id));

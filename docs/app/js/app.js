@@ -5,7 +5,7 @@ import { getContext, decodeBlob, StackPlayer } from './audio-mixer.js';
 import { analyzeBuffer } from './audio-analysis.js';
 import { pitchShiftBuffer, clampPitch, MIN_PITCH_SEMITONES, MAX_PITCH_SEMITONES } from './audio-effects.js';
 import * as storage from './storage.js';
-import { renderFeed, defaultTitle } from './feed.js';
+import { renderFeed, defaultTitle, sanitizeTitle } from './feed.js';
 import { initLang, getLang, toggleLang, t } from './i18n.js';
 
 const els = {
@@ -45,6 +45,7 @@ const state = {
   playingId: null,
   loopIds: new Set(),
   confirmingDeleteId: null,
+  editingId: null, // post whose title is currently being edited inline
 };
 
 let recorder = null;
@@ -189,6 +190,35 @@ const feedHandlers = {
     setMode('idle');
     els.recorderCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
     await refreshFeed();
+  },
+
+  async onEditTitle(post) {
+    state.editingId = post.id;
+    await refreshFeed();
+    const input = els.feedList.querySelector(`[data-id="${post.id}"] .post-title-input`);
+    if (input) {
+      input.focus();
+      input.select();
+    }
+  },
+
+  async onTitleSave(post, rawValue) {
+    state.editingId = null;
+    const sanitized = sanitizeTitle(rawValue);
+    if (sanitized && sanitized !== post.title) {
+      post.title = sanitized;
+      try {
+        await storage.renamePost(post.id, sanitized);
+      } catch (err) {
+        console.warn('[neiro] failed to rename post:', err);
+      }
+    }
+    await refreshFeed();
+  },
+
+  onTitleCancel(post) {
+    state.editingId = null;
+    return refreshFeed();
   },
 
   // Two-tap delete: first tap arms the button, second tap deletes.

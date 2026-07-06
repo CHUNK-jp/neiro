@@ -6,6 +6,8 @@ import {
   layerCountLabel,
   stackKindLabel,
   timeAgo,
+  sanitizeTitle,
+  MAX_TITLE_LENGTH,
 } from '../docs/app/js/feed.js';
 import { translator } from '../docs/app/js/i18n.js';
 
@@ -59,4 +61,22 @@ test('timeAgo buckets minutes, hours, then dates', () => {
   assert.equal(timeAgo(now - 5 * 60 * 1000, now, ja), '5分前');
   const old = new Date(2026, 0, 15).getTime();
   assert.equal(timeAgo(old, now, en), '1/15');
+});
+
+test('sanitizeTitle trims whitespace', () => {
+  assert.equal(sanitizeTitle('  Rooftop rain  '), 'Rooftop rain');
+});
+
+test('sanitizeTitle caps at MAX_TITLE_LENGTH characters', () => {
+  const long = 'x'.repeat(50);
+  const result = sanitizeTitle(long);
+  assert.equal(result.length, MAX_TITLE_LENGTH);
+  assert.equal(result, 'x'.repeat(MAX_TITLE_LENGTH));
+});
+
+test('sanitizeTitle returns null for blank or whitespace-only input', () => {
+  assert.equal(sanitizeTitle('   '), null);
+  assert.equal(sanitizeTitle(''), null);
+  assert.equal(sanitizeTitle(undefined), null);
+  assert.equal(sanitizeTitle(null), null);
 });
