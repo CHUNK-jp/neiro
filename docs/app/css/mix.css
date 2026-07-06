@@ -178,6 +178,39 @@ body {
   padding: 12px 0 calc(8px + var(--tab-bar-clearance));
 }
 
+/* Favorites-only filter pill — same visual language as the Feed's
+   .btn-fav-filter (style.css), reimplemented here since mix.css is
+   self-contained and does not import style.css. */
+.sounds-toolbar {
+  flex-shrink: 0;
+  display: flex;
+  margin: 0 0 14px;
+}
+
+.btn-fav-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: transparent;
+  color: rgba(244, 233, 216, 0.45);
+  border: 1px solid rgba(244, 233, 216, 0.15);
+  font-size: 12px;
+  padding: 6px 12px;
+  min-height: 32px;
+  border-radius: 100px;
+  cursor: pointer;
+  touch-action: manipulation;
+  font-family: inherit;
+}
+
+.btn-fav-filter:hover { color: #F59E0B; border-color: rgba(245, 158, 11, 0.4); }
+
+.btn-fav-filter.is-active {
+  color: #F59E0B;
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.4);
+}
+
 /* Sound card */
 .sound-card {
   position: relative;
@@ -220,6 +253,32 @@ body {
   color: rgba(244, 233, 216, 0.4);
   margin-top: 2px;
 }
+
+.sound-card-head-actions {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sound-star {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  color: rgba(244, 233, 216, 0.35);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.sound-star:hover { color: #F59E0B; background: rgba(245, 158, 11, 0.12); }
+.sound-star.is-active { color: #F59E0B; }
 
 .sound-check {
   width: 22px;

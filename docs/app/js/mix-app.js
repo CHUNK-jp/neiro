@@ -1,12 +1,13 @@
 // mix-app.js — MIX Studio page controller.
 // Five screens: 0 Feed → 1 Texture → 2 Mood → 3 Generating → 4 Result.
 
-import { getAllPosts, addPost } from './storage.js';
+import { getAllPosts, addPost, setFavorite } from './storage.js';
 import { getContext, decodeBlob, StackPlayer, MIX_LOOP_CROSSFADE_S } from './audio-mixer.js';
 import { analyzeBuffer } from './audio-analysis.js';
 import { pitchShiftBuffer } from './audio-effects.js';
 import { renderMix, encodeWavBlob } from './mix-engine.js';
 import { initLang, toggleLang, getLang, t } from './i18n.js';
+import { filterFavorites } from './feed.js';
 
 // ---- Design constants ----
 
@@ -36,6 +37,7 @@ const RIPPLE_SOURCES = [
 const state = {
   screen: 0,
   posts: [],           // all posts from storage (newest first)
+  favoritesOnly: false, // screen-0 filter; in-memory only, matches app.js's state.favoritesOnly
   selectedIds: [],     // post ids in selection order
   textures: {},        // { postId: textureId } defaults to 'raw'
   moodId: null,
@@ -61,6 +63,7 @@ const els = {
   // Screen 0
   feedTitle:       $('feed-title'),
   feedSub:         $('feed-sub'),
+  favFilterBtn:    $('fav-filter-btn'),
   soundsGrid:      $('sounds-grid'),
   continueBar:     $('continue-bar'),
   continueBtn:     $('continue-btn'),
@@ -102,6 +105,11 @@ const els = {
 // Same glyph as feed.js's LOOP_ICON — kept as a local copy since the two
 // pages don't share a rendering module.
 const LOOP_ICON = '<svg viewBox="0 0 16 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" width="14" height="12" aria-hidden="true"><path d="M1 4h9a3 3 0 010 6H9"></path><path d="M15 4l-2-2M15 4l-2 2"></path><path d="M15 10H6a3 3 0 010-6H7"></path><path d="M1 10l2-2M1 10l2 2"></path></svg>';
+
+// Same glyphs as feed.js's STAR_ICON/STAR_OUTLINE_ICON — kept as local copies
+// for the same reason as LOOP_ICON above: two pages, no shared rendering module.
+const STAR_ICON = '<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01L12 2z"></path></svg>';
+const STAR_OUTLINE_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" width="14" height="14" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01L12 2z"></path></svg>';
 
 // ---- Deterministic pseudo-random waveform ----
 
@@ -174,6 +182,7 @@ function formatDuration(post) {
 
 function buildSoundCard(post) {
   const isSelected = state.selectedIds.includes(post.id);
+  const isFavorite = !!post.favorite;
   const dur = formatDuration(post);
   const used = usedCount(post);
   const durStr = dur != null ? `${dur} ・ ` : '';
@@ -190,8 +199,11 @@ function buildSoundCard(post) {
         <div class="sound-card-title">${escHtml(post.title || t('mixUntitled'))}</div>
         <div class="sound-card-meta">${escHtml(durStr + t('mixUsed', used))}</div>
       </div>
-      <div class="sound-check">
-        <span class="sound-check-mark">✓</span>
+      <div class="sound-card-head-actions">
+        <button type="button" class="sound-star${isFavorite ? ' is-active' : ''}" aria-pressed="${isFavorite}" aria-label="${escHtml(t('favorite'))}">${isFavorite ? STAR_ICON : STAR_OUTLINE_ICON}</button>
+        <div class="sound-check">
+          <span class="sound-check-mark">✓</span>
+        </div>
       </div>
     </div>
     <div class="sound-wave"></div>
@@ -205,8 +217,34 @@ function buildSoundCard(post) {
     wave.appendChild(bar);
   }
 
+  // The whole card is clickable to toggle mix-selection, so the star button
+  // must stop propagation or tapping it would also select/deselect the card.
+  const starBtn = card.querySelector('.sound-star');
+  starBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleFavorite(post.id);
+  });
+
   card.addEventListener('click', () => toggleSound(post.id));
   return card;
+}
+
+// Reuses storage.setFavorite exactly as-is (same path the Feed uses), then
+// patches the in-memory state.posts snapshot so screen 0 reflects the change
+// immediately — state.posts is only fetched once at init(), it won't refresh
+// on its own.
+async function toggleFavorite(postId) {
+  const post = state.posts.find((p) => p.id === postId);
+  if (!post) return;
+  const next = !post.favorite;
+  try {
+    await setFavorite(postId, next);
+  } catch (err) {
+    console.warn('[neiro] failed to toggle favorite:', err);
+    return;
+  }
+  post.favorite = next;
+  renderScreen0();
 }
 
 function toggleSound(postId) {
@@ -223,6 +261,11 @@ function renderScreen0() {
   const grid = els.soundsGrid;
   grid.innerHTML = '';
 
+  const visible = filterFavorites(state.posts, state.favoritesOnly);
+  // Distinguish "no sounds at all" from "filtered down to zero favorites" —
+  // same distinction the Feed makes in app.js.
+  const noFavoritesYet = state.favoritesOnly && state.posts.length > 0 && visible.length === 0;
+
   if (state.posts.length === 0) {
     // Empty archive
     const empty = document.createElement('div');
@@ -230,9 +273,15 @@ function renderScreen0() {
     grid.style.display = 'block';
     empty.innerHTML = `${escHtml(t('mixEmpty'))}<a href="./index.html">${escHtml(t('navFeed'))}</a>`;
     grid.appendChild(empty);
+  } else if (noFavoritesYet) {
+    const empty = document.createElement('div');
+    empty.className = 'mix-empty';
+    grid.style.display = 'block';
+    empty.textContent = t('mixEmptyFav');
+    grid.appendChild(empty);
   } else {
     grid.style.display = '';
-    for (const post of state.posts) {
+    for (const post of visible) {
       grid.appendChild(buildSoundCard(post));
     }
   }
@@ -243,6 +292,11 @@ function renderScreen0() {
 
   els.feedTitle.textContent = t('mixFeedTitle');
   els.feedSub.textContent = t('mixFeedSub');
+
+  els.favFilterBtn.classList.toggle('is-active', state.favoritesOnly);
+  els.favFilterBtn.setAttribute('aria-pressed', String(state.favoritesOnly));
+  const favLabel = els.favFilterBtn.querySelector('span');
+  if (favLabel) favLabel.textContent = t('favoritesFilter');
 }
 
 // ---- Screen 1: Texture ----
@@ -742,6 +796,11 @@ els.langPill.addEventListener('click', () => { toggleLang(); applyTranslations()
 els.continueBtn.addEventListener('click', () => {
   goTo(1);
   renderScreen1();
+});
+
+els.favFilterBtn.addEventListener('click', () => {
+  state.favoritesOnly = !state.favoritesOnly;
+  renderScreen0();
 });
 
 els.texNextBtn.addEventListener('click', () => {
