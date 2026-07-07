@@ -273,11 +273,10 @@ body {
   border: none;
   border-radius: 6px;
   color: rgba(244, 233, 216, 0.35);
-  cursor: pointer;
+  cursor: default;
   touch-action: manipulation;
 }
 
-.sound-star:hover { color: #F59E0B; background: rgba(245, 158, 11, 0.12); }
 .sound-star.is-active { color: #F59E0B; }
 
 .sound-check {

@@ -1,7 +1,7 @@
 // mix-app.js — MIX Studio page controller.
 // Five screens: 0 Feed → 1 Texture → 2 Mood → 3 Generating → 4 Result.
 
-import { getAllPosts, addPost, setFavorite } from './storage.js';
+import { getAllPosts, addPost } from './storage.js';
 import { getContext, decodeBlob, StackPlayer, MIX_LOOP_CROSSFADE_S } from './audio-mixer.js';
 import { analyzeBuffer } from './audio-analysis.js';
 import { pitchShiftBuffer } from './audio-effects.js';
@@ -200,7 +200,7 @@ function buildSoundCard(post) {
         <div class="sound-card-meta">${escHtml(durStr + t('mixUsed', used))}</div>
       </div>
       <div class="sound-card-head-actions">
-        <button type="button" class="sound-star${isFavorite ? ' is-active' : ''}" aria-pressed="${isFavorite}" aria-label="${escHtml(t('favorite'))}">${isFavorite ? STAR_ICON : STAR_OUTLINE_ICON}</button>
+        <span class="sound-star${isFavorite ? ' is-active' : ''}" aria-label="${escHtml(t('favorite'))}">${isFavorite ? STAR_ICON : STAR_OUTLINE_ICON}</span>
         <div class="sound-check">
           <span class="sound-check-mark">✓</span>
         </div>
@@ -217,34 +217,8 @@ function buildSoundCard(post) {
     wave.appendChild(bar);
   }
 
-  // The whole card is clickable to toggle mix-selection, so the star button
-  // must stop propagation or tapping it would also select/deselect the card.
-  const starBtn = card.querySelector('.sound-star');
-  starBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    toggleFavorite(post.id);
-  });
-
   card.addEventListener('click', () => toggleSound(post.id));
   return card;
-}
-
-// Reuses storage.setFavorite exactly as-is (same path the Feed uses), then
-// patches the in-memory state.posts snapshot so screen 0 reflects the change
-// immediately — state.posts is only fetched once at init(), it won't refresh
-// on its own.
-async function toggleFavorite(postId) {
-  const post = state.posts.find((p) => p.id === postId);
-  if (!post) return;
-  const next = !post.favorite;
-  try {
-    await setFavorite(postId, next);
-  } catch (err) {
-    console.warn('[neiro] failed to toggle favorite:', err);
-    return;
-  }
-  post.favorite = next;
-  renderScreen0();
 }
 
 function toggleSound(postId) {
