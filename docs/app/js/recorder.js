@@ -4,11 +4,12 @@
 export const MAX_DURATION_MS = 10000;
 export const TICK_INTERVAL_MS = 100;
 
+// WebM/Opus keeps a 10s take around 100–200KB; audio/mp4 covers Safari.
+// When neither is supported, pickMimeType returns '' and the MediaRecorder
+// falls back to the browser's default container.
 export const MIME_CANDIDATES = [
   'audio/webm;codecs=opus',
-  'audio/webm',
   'audio/mp4',
-  'audio/ogg;codecs=opus',
 ];
 
 // --- Pure helpers (unit-tested in tests/) ---

@@ -1,6 +1,12 @@
 // storage.js — IndexedDB persistence for Neiro posts.
 // A post carries copies of every layer blob it is built from, so pruning an
 // old parent post never breaks playback of its descendants.
+//
+// Post records also carry `mimeType`: the container MediaRecorder actually
+// produced for the take (e.g. "audio/webm;codecs=opus"). Records written
+// before this field existed (WAV-era posts) are stored as-is and are never
+// migrated — old and new formats coexist in the same store, and playback
+// relies on decodeAudioData sniffing the container, not on this field.
 
 const DB_NAME = 'neiro-db';
 const DB_VERSION = 1;

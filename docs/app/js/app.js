@@ -505,6 +505,11 @@ async function postRecording() {
     id: crypto.randomUUID(),
     title,
     createdAt: Date.now(),
+    // Container actually produced by MediaRecorder for this take (e.g.
+    // "audio/webm;codecs=opus"). Posts saved before this field existed are
+    // WAV/legacy blobs and simply lack it — decodeAudioData sniffs the
+    // container from the bytes, so playback never consults this.
+    mimeType: state.recordedBlob.type || '',
     parentId: target ? target.id : null,
     parentTitle: target ? target.title : null,
     layers: target
