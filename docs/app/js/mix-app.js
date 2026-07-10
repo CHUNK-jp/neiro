@@ -8,6 +8,7 @@ import { pitchShiftBuffer } from './audio-effects.js';
 import { renderMix, encodeWavBlob } from './mix-engine.js';
 import { initLang, toggleLang, getLang, t } from './i18n.js';
 import { filterFavorites } from './feed.js';
+import { encodeBufferToOpusBlob } from './opus-encoder.js';
 
 // ---- Design constants ----
 
@@ -43,12 +44,17 @@ const state = {
   moodId: null,
   musicOn: true,
   rendered: null,      // AudioBuffer from renderMix
-  wavBlob: null,       // lazy-encoded WAV blob
+  wavBlob: null,       // lazy-encoded WAV blob (share/download path only)
+  // Lazy-encoded Opus blob for feed storage only — share/download keeps WAV.
+  // Falls back to holding the WAV blob when Opus encoding or decoding isn't
+  // available on this browser.
+  feedBlob: null,
   player: null,        // StackPlayer wrapping the rendered mix
   playStartCtxTime: 0, // ctx.currentTime when the current play() started
   playRaf: 0,
   loopOn: false,
   postBtnPosted: false,
+  posting: false,      // re-entrancy guard while ensureFeedBlob() encodes
 };
 
 // ---- DOM refs ----
@@ -580,6 +586,23 @@ function ensureWavBlob() {
   return state.wavBlob;
 }
 
+async function ensureFeedBlob() {
+  if (!state.feedBlob && state.rendered) {
+    try {
+      const blob = await encodeBufferToOpusBlob(state.rendered);
+      // Round-trip check: decodeAudioData must be able to read our own
+      // output on THIS browser (older Safari can't decode Ogg/Opus).
+      // If it can't, storing the blob would create an unplayable post.
+      await decodeBlob(blob, getContext());
+      state.feedBlob = blob;
+    } catch (err) {
+      console.warn('[neiro] opus feed encode unavailable, saving WAV:', err);
+      state.feedBlob = ensureWavBlob();
+    }
+  }
+  return state.feedBlob;
+}
+
 async function shareCard() {
   const blob = ensureWavBlob();
   if (!blob) return;
@@ -607,53 +630,65 @@ async function shareCard() {
 }
 
 async function postToFeed() {
-  if (state.postBtnPosted) return;
-  const blob = ensureWavBlob();
-  if (!blob || !state.rendered) return;
-
-  const mood = moodDef(state.moodId);
-  const titleText = t(mood.nameKey);
-  const posts = selectedPosts();
-
-  let analysis;
-  try {
-    const ctx = getContext();
-    if (ctx.state === 'suspended') await ctx.resume();
-    analysis = analyzeBuffer(state.rendered);
-  } catch (_) {
-    analysis = { kind: 'ambient', bpm: 0, firstOnset: 0 };
-  }
-
-  const post = {
-    id: crypto.randomUUID(),
-    title: titleText,
-    createdAt: Date.now(),
-    parentId: null,
-    parentTitle: null,
-    layers: [{
-      blob,
-      type: 'audio/wav',
-      pitch: 0,
-      analysis: { ...analysis, duration: state.rendered.duration },
-    }],
-    mix: {
-      moodId: state.moodId,
-      foundation: state.musicOn,
-      textures: { ...state.textures },
-      sourceIds: [...state.selectedIds],
-      sourceTitles: posts.map((p) => p.title || t('mixUntitled')),
-    },
-  };
-
-  await addPost(post);
-
-  state.postBtnPosted = true;
-  els.postBtn.textContent = t('mixPosted');
+  if (state.postBtnPosted || state.posting) return;
+  state.posting = true;
   els.postBtn.disabled = true;
 
-  setTimeout(() => {
-    location.href = './index.html#feed';
-  }, 900);
+  try {
+    const blob = await ensureFeedBlob();
+    if (!blob || !state.rendered) return;
+
+    const mood = moodDef(state.moodId);
+    const titleText = t(mood.nameKey);
+    const posts = selectedPosts();
+
+    let analysis;
+    try {
+      const ctx = getContext();
+      if (ctx.state === 'suspended') await ctx.resume();
+      analysis = analyzeBuffer(state.rendered);
+    } catch (_) {
+      analysis = { kind: 'ambient', bpm: 0, firstOnset: 0 };
+    }
+
+    const post = {
+      id: crypto.randomUUID(),
+      title: titleText,
+      createdAt: Date.now(),
+      // Container actually stored for this mix (WAV fallback or Ogg/Opus) —
+      // mirrors the recorder-side pattern in postRecording (app.js). WAV-era
+      // posts predate this field and simply lack it; they are never migrated.
+      mimeType: blob.type,
+      parentId: null,
+      parentTitle: null,
+      layers: [{
+        blob,
+        type: blob.type,
+        pitch: 0,
+        analysis: { ...analysis, duration: state.rendered.duration },
+      }],
+      mix: {
+        moodId: state.moodId,
+        foundation: state.musicOn,
+        textures: { ...state.textures },
+        sourceIds: [...state.selectedIds],
+        sourceTitles: posts.map((p) => p.title || t('mixUntitled')),
+      },
+    };
+
+    await addPost(post);
+
+    state.postBtnPosted = true;
+    els.postBtn.textContent = t('mixPosted');
+    els.postBtn.disabled = true;
+
+    setTimeout(() => {
+      location.href = './index.html#feed';
+    }, 900);
+  } finally {
+    state.posting = false;
+    if (!state.postBtnPosted) els.postBtn.disabled = false;
+  }
 }
 
 // ---- Mix generation flow ----
@@ -717,6 +752,7 @@ async function startMix() {
 
   state.rendered = rendered;
   state.wavBlob = null;
+  state.feedBlob = null;
   state.loopOn = false;
   stopPlayback();
 
@@ -734,6 +770,7 @@ function resetMix() {
   state.musicOn = true;
   state.rendered = null;
   state.wavBlob = null;
+  state.feedBlob = null;
   state.loopOn = false;
   state.postBtnPosted = false;
   goTo(0);
